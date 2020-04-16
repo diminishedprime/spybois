@@ -59,18 +59,16 @@ const gameDoc = (db: firebase.firestore.Firestore, gameUid: string) => {
   return gamesCollection(db).doc(gameUid);
 };
 
-const getGame = async (
+const subcribeToGameChanges = (
   db: firebase.firestore.Firestore,
-  gameUid: string
-): Promise<GameData | undefined> => {
-  const game = await gameDoc(db, gameUid).get();
-  const data = game.data();
-  if (data === undefined) {
-    return undefined;
-  }
-  // TODO - In the future I should check that this can be parsed correctly.
-  const gameData = data as GameData;
-  return gameData;
+  gameUid: string,
+  cb: (gameData: GameData | undefined) => void
+): (() => void) => {
+  const unSub = gameDoc(db, gameUid).onSnapshot(game => {
+    const data = game.data();
+    cb(data as GameData);
+  });
+  return unSub;
 };
 
 const CreateGame: React.FC<{ uid: string }> = ({ uid }) => {
@@ -123,7 +121,7 @@ const Game = () => {
     }
   }, [copied]);
   React.useEffect(() => {
-    getGame(db, gameUid).then(d => {
+    return subcribeToGameChanges(db, gameUid, d => {
       if (d === undefined) {
         // handle case where game is not found.
       }
