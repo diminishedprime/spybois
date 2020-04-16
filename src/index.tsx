@@ -51,7 +51,6 @@ const CreateGame: React.FC<{ uid: string }> = ({ uid }) => {
     db.collection("games")
       .add(newGameWithSelf(uid))
       .then(nuGame => {
-        console.log({ nuGame });
         history.push(`/games/${nuGame.id}`);
       });
   }, []);
@@ -131,13 +130,12 @@ const App = () => {
   const classes = useStyles();
 
   React.useEffect(() => {
-    auth.onAuthStateChanged(user => {
-      if (!user) {
+    return auth.onAuthStateChanged(user => {
+      if (user === null) {
         setUser(undefined);
         history.push("/login");
       } else {
         setUser(user);
-        history.push("/");
       }
     });
   }, []);
@@ -149,7 +147,7 @@ const App = () => {
           <Route exact path={["/lobby", "/"]}>
             {user && <Lobby uid={user.uid} />}
           </Route>
-          <Route path="/game/:gameUid">
+          <Route path="/games/:gameUid">
             <Game />
           </Route>
           <Route path="/login">
