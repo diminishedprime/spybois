@@ -10,6 +10,7 @@ import {
   useHistory
 } from "react-router-dom";
 import Button from "@material-ui/core/Button";
+import { makeStyles } from "@material-ui/core/styles";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAsz9rfRC01eFIfo_FvZ2x3-2DHf_2Ulws",
@@ -25,8 +26,18 @@ const firebaseConfig = {
 const app = firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 
+const CreateGame = () => {
+  const newGame = React.useCallback(() => {}, []);
+  return <Button onClick={newGame}>New Game</Button>;
+};
+
 const Lobby = () => {
-  return <div>Lobby</div>;
+  return (
+    <div>
+      Lobby
+      <CreateGame />
+    </div>
+  );
 };
 
 const Game = () => {
@@ -45,23 +56,41 @@ const SignIn = () => {
         // TODO - handle login error.
       });
   }, []);
-  return <Button onClick={signIn}>Login With Google</Button>;
+  return (
+    <Button color={"primary"} variant="outlined" onClick={signIn}>
+      Login With Google
+    </Button>
+  );
 };
 
 const SignOut = () => {
   const signOut = React.useCallback(() => {
     auth.signOut();
   }, []);
-  return <Button onClick={signOut}>Sign Out</Button>;
+  return (
+    <Button variant="contained" color="secondary" onClick={signOut}>
+      Sign Out
+    </Button>
+  );
 };
+
+const useStyles = makeStyles(theme => ({
+  root: {
+    margin: "0 auto",
+    maxWidth: theme.breakpoints.width("md")
+  },
+  pageContent: {}
+}));
 
 const App = () => {
   const history = useHistory();
   const [user, setUser] = React.useState<firebase.User>();
+  const classes = useStyles();
 
   React.useEffect(() => {
     auth.onAuthStateChanged(user => {
       if (!user) {
+        setUser(undefined);
         history.push("/login");
       } else {
         setUser(user);
@@ -71,19 +100,22 @@ const App = () => {
   }, []);
 
   return (
-    <div>
+    <div className={classes.root}>
+      <div className={classes.pageContent}>
+        <Switch>
+          <Route exact path={["/lobby", "/"]}>
+            <Lobby />
+          </Route>
+          <Route path="/game">
+            <Game />
+          </Route>
+          <Route path="/login">
+            <SignIn />
+          </Route>
+        </Switch>
+      </div>
+
       {user !== undefined && <SignOut />}
-      <Switch>
-        <Route exact path={["/lobby", "/"]}>
-          <Lobby />
-        </Route>
-        <Route path="/game">
-          <Game />
-        </Route>
-        <Route path="/login">
-          <SignIn />
-        </Route>
-      </Switch>
     </div>
   );
 };
