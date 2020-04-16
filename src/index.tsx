@@ -9,7 +9,8 @@ import {
   Switch,
   Route,
   useHistory,
-  useParams
+  useParams,
+  Link
 } from "react-router-dom";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
@@ -64,7 +65,6 @@ const getGame = async (
 ): Promise<GameData | undefined> => {
   const game = await gameDoc(db, gameUid).get();
   const data = game.data();
-  console.log({ game, data });
   if (data === undefined) {
     return undefined;
   }
@@ -111,8 +111,24 @@ interface GameParams {
 const Game = () => {
   const { gameUid } = useParams<GameParams>();
   const [gameData, setGameData] = React.useState<GameData>();
+  const [copied, setCopied] = React.useState(false);
   React.useEffect(() => {
-    getGame(db, gameUid).then(setGameData);
+    if (copied) {
+      const id = window.setTimeout(() => {
+        setCopied(false);
+      }, 1500);
+      return () => {
+        window.clearTimeout(id);
+      };
+    }
+  }, [copied]);
+  React.useEffect(() => {
+    getGame(db, gameUid).then(d => {
+      if (d === undefined) {
+        // handle case where game is not found.
+      }
+      setGameData(d);
+    });
   }, [gameUid]);
 
   // TODO default to spectator view;
@@ -120,14 +136,24 @@ const Game = () => {
   return (
     <>
       <div>Game: {gameUid}</div>
-      <CopyToClipboard text={document.location.href}>
-        <Button
-          variant="contained"
-          color="secondary"
-          startIcon={<FileCopyIcon />}
-        >
-          Copy link to game
-        </Button>
+      <CopyToClipboard
+        text={document.location.href}
+        onCopy={(text: string, result: boolean) => {
+          if (result === true) {
+            setCopied(true);
+          }
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <Button
+            variant="contained"
+            color="secondary"
+            startIcon={<FileCopyIcon />}
+          >
+            Copy link to game
+          </Button>
+          {copied && <Typography>Copied!</Typography>}
+        </div>
       </CopyToClipboard>
       <br />
       {gameData && JSON.stringify(gameData)}
@@ -206,9 +232,15 @@ const App = () => {
           <Route exact path={["/lobby", "/"]}>
             {user && <Lobby uid={user.uid} />}
           </Route>
-          <Route path="/games/:gameUid">{user && <Game />}</Route>
-          <Route path="/login">
+          <Route exact path="/games/:gameUid">
+            {user && <Game />}
+          </Route>
+          <Route exact path="/login">
             <SignIn />
+          </Route>
+          <Route default>
+            <div>Page not found</div>
+            <Link to="/">Home</Link>
           </Route>
         </Switch>
       </div>
