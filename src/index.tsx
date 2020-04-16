@@ -133,6 +133,8 @@ const App = () => {
     return auth.onAuthStateChanged(user => {
       if (user === null) {
         setUser(undefined);
+        // TODO - Figure out how to redirect back to the original page after the
+        // user successufully logs in.
         history.push("/login");
       } else {
         setUser(user);
