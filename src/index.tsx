@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import * as serviceWorker from "./serviceWorker";
-import * as firebase from "firebase/app";
+import firebase from "firebase/app";
 import "firebase/auth";
 import "firebase/firestore";
 import {
@@ -14,7 +14,6 @@ import {
 } from "react-router-dom";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
-import TextField from "@material-ui/core/TextField";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
 import { makeStyles } from "@material-ui/core/styles";
 import { CopyToClipboard } from "react-copy-to-clipboard";
@@ -30,6 +29,7 @@ const firebaseConfig = {
   measurementId: "G-V2NY7J0W6T"
 };
 
+// TODO - All of these things should probably be put into a redux store.
 const app = firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
