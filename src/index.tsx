@@ -10,6 +10,7 @@ import {
   useHistory
 } from "react-router-dom";
 import Button from "@material-ui/core/Button";
+import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
 
 const firebaseConfig = {
@@ -26,17 +27,33 @@ const firebaseConfig = {
 const app = firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 
+const useStylesCreateGame = makeStyles(theme => ({
+  root: {
+    margin: theme.spacing(1, 0, 1)
+  }
+}));
+
 const CreateGame = () => {
   const newGame = React.useCallback(() => {}, []);
-  return <Button onClick={newGame}>New Game</Button>;
+  const classes = useStylesCreateGame();
+  return (
+    <Button
+      className={classes.root}
+      color="primary"
+      variant="contained"
+      onClick={newGame}
+    >
+      New Game
+    </Button>
+  );
 };
 
 const Lobby = () => {
   return (
-    <div>
-      Lobby
+    <>
+      <Typography variant="h3">Lobby</Typography>
       <CreateGame />
-    </div>
+    </>
   );
 };
 
@@ -57,7 +74,7 @@ const SignIn = () => {
       });
   }, []);
   return (
-    <Button color={"primary"} variant="outlined" onClick={signIn}>
+    <Button color={"primary"} variant="contained" onClick={signIn}>
       Login With Google
     </Button>
   );
@@ -68,7 +85,7 @@ const SignOut = () => {
     auth.signOut();
   }, []);
   return (
-    <Button variant="contained" color="secondary" onClick={signOut}>
+    <Button color="secondary" variant="outlined" onClick={signOut}>
       Sign Out
     </Button>
   );
@@ -77,6 +94,7 @@ const SignOut = () => {
 const useStyles = makeStyles(theme => ({
   root: {
     margin: "0 auto",
+    padding: theme.spacing(1),
     maxWidth: theme.breakpoints.width("md")
   },
   pageContent: {}
