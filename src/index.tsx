@@ -1,14 +1,33 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import * as serviceWorker from './serviceWorker';
+import React from "react";
+import ReactDOM from "react-dom";
+import * as serviceWorker from "./serviceWorker";
+
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
+
+const Lobby = () => {
+  return <div>Lobby</div>;
+};
+
+const Game = () => {
+  return <div>Game</div>;
+};
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <Router>
+      <div>
+        <Switch>
+          <Route path={["/lobby", "/"]}>
+            <Lobby />
+          </Route>
+          <Route path="/users">
+            <Game />
+          </Route>
+        </Switch>
+      </div>
+    </Router>
   </React.StrictMode>,
-  document.getElementById('root')
+  document.getElementById("root")
 );
 
 // If you want your app to work offline and load faster, you can change
