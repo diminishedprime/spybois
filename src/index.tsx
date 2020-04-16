@@ -3,11 +3,13 @@ import ReactDOM from "react-dom";
 import * as serviceWorker from "./serviceWorker";
 import * as firebase from "firebase/app";
 import "firebase/auth";
+import "firebase/firestore";
 import {
   BrowserRouter as Router,
   Switch,
   Route,
-  useHistory
+  useHistory,
+  useParams
 } from "react-router-dom";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
@@ -26,6 +28,7 @@ const firebaseConfig = {
 
 const app = firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
+const db = firebase.firestore();
 
 const useStylesCreateGame = makeStyles(theme => ({
   root: {
@@ -33,8 +36,25 @@ const useStylesCreateGame = makeStyles(theme => ({
   }
 }));
 
-const CreateGame = () => {
-  const newGame = React.useCallback(() => {}, []);
+interface GameData {
+  // uids of everyone in the game.
+  players: string[];
+}
+
+const newGameWithSelf = (uid: string): GameData => {
+  return { players: [uid] };
+};
+
+const CreateGame: React.FC<{ uid: string }> = ({ uid }) => {
+  const history = useHistory();
+  const newGame = React.useCallback(() => {
+    db.collection("games")
+      .add(newGameWithSelf(uid))
+      .then(nuGame => {
+        console.log({ nuGame });
+        history.push(`/games/${nuGame.id}`);
+      });
+  }, []);
   const classes = useStylesCreateGame();
   return (
     <Button
@@ -48,17 +68,22 @@ const CreateGame = () => {
   );
 };
 
-const Lobby = () => {
+const Lobby: React.FC<{ uid: string }> = ({ uid }) => {
   return (
     <>
       <Typography variant="h3">Lobby</Typography>
-      <CreateGame />
+      <CreateGame uid={uid} />
     </>
   );
 };
 
+interface GameParams {
+  gameUid: string;
+}
+
 const Game = () => {
-  return <div>Game</div>;
+  const { gameUid } = useParams<GameParams>();
+  return <div>Game: {gameUid}</div>;
 };
 
 const SignIn = () => {
@@ -122,9 +147,9 @@ const App = () => {
       <div className={classes.pageContent}>
         <Switch>
           <Route exact path={["/lobby", "/"]}>
-            <Lobby />
+            {user && <Lobby uid={user.uid} />}
           </Route>
-          <Route path="/game">
+          <Route path="/game/:gameUid">
             <Game />
           </Route>
           <Route path="/login">
