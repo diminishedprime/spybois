@@ -13,7 +13,10 @@ import {
 } from "react-router-dom";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
+import TextField from "@material-ui/core/TextField";
+import FileCopyIcon from "@material-ui/icons/FileCopy";
 import { makeStyles } from "@material-ui/core/styles";
+import { CopyToClipboard } from "react-copy-to-clipboard";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAsz9rfRC01eFIfo_FvZ2x3-2DHf_2Ulws",
@@ -39,16 +42,41 @@ const useStylesCreateGame = makeStyles(theme => ({
 interface GameData {
   // uids of everyone in the game.
   players: string[];
+  team1Spy?: string;
+  team2Spy?: string;
 }
 
 const newGameWithSelf = (uid: string): GameData => {
   return { players: [uid] };
 };
 
+const gamesCollection = (db: firebase.firestore.Firestore) => {
+  return db.collection("games");
+};
+
+const gameDoc = (db: firebase.firestore.Firestore, gameUid: string) => {
+  return gamesCollection(db).doc(gameUid);
+};
+
+const getGame = async (
+  db: firebase.firestore.Firestore,
+  gameUid: string
+): Promise<GameData | undefined> => {
+  const game = await gameDoc(db, gameUid).get();
+  const data = game.data();
+  console.log({ game, data });
+  if (data === undefined) {
+    return undefined;
+  }
+  // TODO - In the future I should check that this can be parsed correctly.
+  const gameData = data as GameData;
+  return gameData;
+};
+
 const CreateGame: React.FC<{ uid: string }> = ({ uid }) => {
   const history = useHistory();
   const newGame = React.useCallback(() => {
-    db.collection("games")
+    gamesCollection(db)
       .add(newGameWithSelf(uid))
       .then(nuGame => {
         history.push(`/games/${nuGame.id}`);
@@ -82,7 +110,27 @@ interface GameParams {
 
 const Game = () => {
   const { gameUid } = useParams<GameParams>();
-  return <div>Game: {gameUid}</div>;
+  const [gameData, setGameData] = React.useState<GameData>();
+  React.useEffect(() => {
+    getGame(db, gameUid).then(setGameData);
+  }, [gameUid]);
+
+  return (
+    <>
+      <div>Game: {gameUid}</div>
+      <CopyToClipboard text={document.location.href}>
+        <Button
+          variant="contained"
+          color="secondary"
+          startIcon={<FileCopyIcon />}
+        >
+          Copy link to game
+        </Button>
+      </CopyToClipboard>
+      <br />
+      {gameData && JSON.stringify(gameData)}
+    </>
+  );
 };
 
 const SignIn = () => {
