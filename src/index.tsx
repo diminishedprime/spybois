@@ -12,19 +12,27 @@ const Game = () => {
   return <div>Game</div>;
 };
 
+const App = () => {
+  // TODO add firebase login.
+  console.log("hi???");
+  return (
+    <div>
+      <Switch>
+        <Route exact path={["/lobby", "/"]}>
+          <Lobby />
+        </Route>
+        <Route path="/game">
+          <Game />
+        </Route>
+      </Switch>
+    </div>
+  );
+};
+
 ReactDOM.render(
   <React.StrictMode>
     <Router>
-      <div>
-        <Switch>
-          <Route path={["/lobby", "/"]}>
-            <Lobby />
-          </Route>
-          <Route path="/users">
-            <Game />
-          </Route>
-        </Switch>
-      </div>
+      <App />
     </Router>
   </React.StrictMode>,
   document.getElementById("root")
