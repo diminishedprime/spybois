@@ -115,6 +115,8 @@ const Game = () => {
     getGame(db, gameUid).then(setGameData);
   }, [gameUid]);
 
+  // TODO default to spectator view;
+
   return (
     <>
       <div>Game: {gameUid}</div>
@@ -172,6 +174,8 @@ const useStyles = makeStyles(theme => ({
   pageContent: {}
 }));
 
+let navigateBackTo: null | string = null;
+
 const App = () => {
   const history = useHistory();
   const [user, setUser] = React.useState<firebase.User>();
@@ -181,11 +185,16 @@ const App = () => {
     return auth.onAuthStateChanged(user => {
       if (user === null) {
         setUser(undefined);
-        // TODO - Figure out how to redirect back to the original page after the
-        // user successufully logs in.
+        navigateBackTo = document.location.pathname;
         history.push("/login");
       } else {
         setUser(user);
+        // This is hacky, but I don't feel like doing proper state handling yet.
+        if (navigateBackTo !== null) {
+          const to = navigateBackTo;
+          navigateBackTo = null;
+          history.push(to);
+        }
       }
     });
   }, []);
@@ -197,9 +206,7 @@ const App = () => {
           <Route exact path={["/lobby", "/"]}>
             {user && <Lobby uid={user.uid} />}
           </Route>
-          <Route path="/games/:gameUid">
-            <Game />
-          </Route>
+          <Route path="/games/:gameUid">{user && <Game />}</Route>
           <Route path="/login">
             <SignIn />
           </Route>
