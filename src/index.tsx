@@ -88,7 +88,9 @@ const Lobby: React.FC<{ uid: string }> = ({ uid }) => {
       <Typography variant="h3">Lobby</Typography>
       <section className={classes.gameCards}>
         {games.map((game) => {
-          const nicks = game.players.map((p) => p.nick).filter((p) => p);
+          const nicks = game.playerIds
+            .map((p) => game.nickMap[p])
+            .filter((p) => p);
           return (
             <Card key={game.id} className={classes.gameCard}>
               <Typography variant="body1">
