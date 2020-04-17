@@ -20,13 +20,18 @@ const gameDoc = (db: firebase.firestore.Firestore, gameUid: string) => {
 
 export const joinGame = async (
   db: firebase.firestore.Firestore,
-  gameUid: string,
+  gameData: WithID<GameData>,
   player: Player
 ): Promise<void> => {
-  return await gameDoc(db, gameUid).update({
-    playerIds: firebase.firestore.FieldValue.arrayUnion(player.id),
-    players: firebase.firestore.FieldValue.arrayUnion(player),
-  });
+  let update: Partial<UpdateGame> = {};
+  if (gameData.nickMap[player.id] !== player.nick) {
+    update.nickMap = {
+      ...gameData.nickMap,
+      [player.id]: player.nick || "nameyoself",
+    };
+  }
+  update.playerIds = firebase.firestore.FieldValue.arrayUnion(player.id);
+  return await gameDoc(db, gameData.id).update(update);
 };
 
 export const unJoinTeam = async (

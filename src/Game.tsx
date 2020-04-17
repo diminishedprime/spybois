@@ -13,6 +13,17 @@ import { Player, WithID, GameData, GameDataInit, Team, Role } from "./types";
 import { makeStyles } from "@material-ui/core/styles";
 
 const useStyles = makeStyles((theme) => ({
+  selected: {
+    color: theme.palette.primary.main,
+  },
+  others: {
+    color: theme.palette.text.secondary,
+  },
+  centeredSection: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
   joinTeam: {
     display: "flex",
     justifyContent: "center",
@@ -50,6 +61,13 @@ const JoinTeam: React.FC<JoinTeamProps> = ({ player, gameData }) => {
     unJoinTeam(db, gameData, player);
   }, [player, gameData]);
 
+  const onTeam = [
+    gameData.team1LeaderId,
+    gameData.team2LeaderId,
+    ...(gameData.team1AgentIds || []),
+    ...(gameData.team2AgentIds || []),
+  ].includes(player.id);
+
   const teamGroup = (team: Team) => {
     const color = team === Team.Team1 ? "primary" : "secondary";
     const leaderId =
@@ -59,14 +77,26 @@ const JoinTeam: React.FC<JoinTeamProps> = ({ player, gameData }) => {
     return (
       <section className={classes.teamGroup}>
         <Button
+          disabled={
+            onTeam ||
+            (team === Team.Team1
+              ? gameData.team1LeaderId
+              : gameData.team2LeaderId) !== undefined
+          }
           color={color}
           variant="contained"
           onClick={join(team, Role.Leader)}
         >
           Leader
         </Button>
-        {leaderId && gameData.nickMap[leaderId]}
+        <Typography
+          variant="body1"
+          className={leaderId === player.id ? classes.selected : classes.others}
+        >
+          {leaderId && gameData.nickMap[leaderId]}
+        </Typography>
         <Button
+          disabled={onTeam}
           color={color}
           variant="outlined"
           onClick={join(team, Role.Agent)}
@@ -74,12 +104,23 @@ const JoinTeam: React.FC<JoinTeamProps> = ({ player, gameData }) => {
           Agents
         </Button>
         {(agentIds || []).map((agentID) => (
-          <div key={agentID}>{gameData.nickMap[agentID]}</div>
+          <Typography
+            variant="body1"
+            key={agentID}
+            className={
+              agentID === player.id ? classes.selected : classes.others
+            }
+          >
+            {gameData.nickMap[agentID]}
+          </Typography>
         ))}
       </section>
     );
   };
 
+  if (!gameData.playerIds.includes(player.id)) {
+    return null;
+  }
   return (
     <>
       <section className={classes.joinTeam}>
@@ -87,7 +128,12 @@ const JoinTeam: React.FC<JoinTeamProps> = ({ player, gameData }) => {
         {teamGroup(Team.Team2)}
       </section>
       <section className={classes.teamGroup}>
-        <Button variant="contained" color="default" onClick={unJoin}>
+        <Button
+          disabled={!onTeam}
+          variant="contained"
+          color="default"
+          onClick={unJoin}
+        >
           Leave Role
         </Button>
       </section>
@@ -102,6 +148,7 @@ interface JoinGameProps {
 
 const JoinGame: React.FC<JoinGameProps> = ({ player, gameData }) => {
   // You shouldn't see this button if you're already in the game.
+  const classes = useStyles();
   if (gameData.playerIds.includes(player.id)) {
     return null;
   }
@@ -113,18 +160,18 @@ const JoinGame: React.FC<JoinGameProps> = ({ player, gameData }) => {
     gameState === types.GameState.Ready
   ) {
     return (
-      <>
+      <section className={classes.centeredSection}>
         <NickName />
         <Button
           variant="contained"
           color="primary"
           onClick={() => {
-            joinGame(db, gameData.id, player);
+            joinGame(db, gameData, player);
           }}
         >
           Join Game!
         </Button>
-      </>
+      </section>
     );
   }
   return null;
