@@ -13,6 +13,7 @@ import {
   Link
 } from "react-router-dom";
 import Button from "@material-ui/core/Button";
+import Card from "@material-ui/core/Card";
 import Typography from "@material-ui/core/Typography";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
 import { makeStyles } from "@material-ui/core/styles";
@@ -40,15 +41,31 @@ const useStylesCreateGame = makeStyles(theme => ({
   }
 }));
 
-interface GameData {
-  // uids of everyone in the game.
+type WithID<T> = T & { id: string };
+
+enum GameState {
+  Init = "init",
+  Ready = "ready"
+}
+
+interface GameDataInit {
+  gameState: GameState.Init;
   players: string[];
   team1Spy?: string;
   team2Spy?: string;
 }
 
+interface GameDataReady {
+  gameState: GameState.Ready;
+  players: string[];
+  team1Spy: string;
+  team2Spy: string;
+}
+
+type GameData = GameDataInit | GameDataReady;
+
 const newGameWithSelf = (uid: string): GameData => {
-  return { players: [uid] };
+  return { players: [uid], gameState: GameState.Init };
 };
 
 const gamesCollection = (db: firebase.firestore.Firestore) => {
@@ -57,6 +74,23 @@ const gamesCollection = (db: firebase.firestore.Firestore) => {
 
 const gameDoc = (db: firebase.firestore.Firestore, gameUid: string) => {
   return gamesCollection(db).doc(gameUid);
+};
+
+const subscribeToGamesWithPlayer = (
+  db: firebase.firestore.Firestore,
+  uid: string,
+  cb: (games: WithID<GameData>[]) => void
+): (() => void) => {
+  return gamesCollection(db)
+    .where("players", "array-contains", uid)
+    .onSnapshot(data => {
+      // TODO - there should actually be some checks on the shape of the data.
+      const games = data.docs.map(doc => ({
+        ...doc.data(),
+        id: doc.id
+      })) as WithID<GameData>[];
+      cb(games);
+    });
 };
 
 const subcribeToGameChanges = (
@@ -94,9 +128,32 @@ const CreateGame: React.FC<{ uid: string }> = ({ uid }) => {
 };
 
 const Lobby: React.FC<{ uid: string }> = ({ uid }) => {
+  const classes = useStyles();
+  const [games, setGames] = React.useState<WithID<GameData>[]>([]);
+  const history = useHistory();
+  React.useEffect(() => {
+    return subscribeToGamesWithPlayer(db, uid, setGames);
+  }, []);
+
   return (
     <>
       <Typography variant="h3">Lobby</Typography>
+      <section className={classes.gameCards}>
+        {games.map(game => (
+          <Card key={game.id} className={classes.gameCard}>
+            <Typography variant="body1">Add in player nicknames.</Typography>
+            <Button
+              color="primary"
+              variant="contained"
+              onClick={() => {
+                history.push(`/games/${game.id}`);
+              }}
+            >
+              Rejoin Game
+            </Button>
+          </Card>
+        ))}
+      </section>
       <CreateGame uid={uid} />
     </>
   );
@@ -195,6 +252,14 @@ const useStyles = makeStyles(theme => ({
     padding: theme.spacing(1),
     maxWidth: theme.breakpoints.width("md")
   },
+  gameCards: {
+    display: "flex"
+  },
+  gameCard: {
+    margin: theme.spacing(1),
+    padding: theme.spacing(1),
+    flexGrow: 1
+  },
   pageContent: {}
 }));
 
@@ -244,6 +309,7 @@ const App = () => {
       </div>
 
       {user !== undefined && <SignOut />}
+      <Link to="/">Home</Link>
     </div>
   );
 };
