@@ -203,12 +203,13 @@ const Game: React.FC<GameProps> = ({ player }) => {
   React.useEffect(() => {
     return subcribeToGameChanges(db, gameUid, (d) => {
       if (d === undefined) {
-        // handle case where game is not found.
+        // TODO - instead of just redirecting home, this should let the user
+        // know the game doesn't exist.
         history.push("/");
       }
       setGameData(d);
     });
-  }, [gameUid]);
+  }, [gameUid, history]);
 
   // TODO - default to spectator view;
 

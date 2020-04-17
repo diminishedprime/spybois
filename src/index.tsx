@@ -96,12 +96,23 @@ const Lobby: React.FC<{ uid: string }> = ({ uid }) => {
               <Typography variant="body1">
                 {nicks.length > 0 && (
                   <>
-                    Join game with{" "}
-                    {nicks.map((nick) => (
-                      <span className={classes.nick} key={nick}>
-                        {nick}
-                      </span>
-                    ))}
+                    Game with{" "}
+                    {nicks.length === 1 && (
+                      <span className={classes.nick}>{nicks[0]}</span>
+                    )}
+                    {nicks.length > 1 &&
+                      nicks.map((nick, idx) => (
+                        <React.Fragment key={nick}>
+                          {nicks.length - 1 === idx
+                            ? " and "
+                            : nicks.length - 2 === idx && nicks.length !== 2
+                            ? ", "
+                            : ""}{" "}
+                          <span className={classes.nick} key={nick}>
+                            {nick}
+                          </span>
+                        </React.Fragment>
+                      ))}
                   </>
                 )}
               </Typography>
@@ -112,7 +123,7 @@ const Lobby: React.FC<{ uid: string }> = ({ uid }) => {
                   history.push(`/games/${game.id}`);
                 }}
               >
-                Rejoin Game
+                Join
               </Button>
             </Card>
           );
