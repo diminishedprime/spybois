@@ -9,10 +9,16 @@ import { subcribeToGameChanges, joinGame, joinTeam, unJoinTeam } from "./db";
 import { db } from "./index";
 import * as types from "./types";
 import { Player, WithID, GameData, GameDataInit, Team, Role } from "./types";
-
 import { makeStyles } from "@material-ui/core/styles";
+import classnames from "classnames";
 
 const useStyles = makeStyles((theme) => ({
+  copy: {
+    marginBottom: theme.spacing(1),
+  },
+  columns: {
+    flexDirection: "column",
+  },
   selected: {
     color: theme.palette.primary.main,
   },
@@ -187,6 +193,7 @@ interface GameProps {
 
 const Game: React.FC<GameProps> = ({ player }) => {
   const history = useHistory();
+  const classes = useStyles();
   const { gameUid } = useParams<GameParams>();
   const [gameData, setGameData] = React.useState<WithID<GameData>>();
   const [copied, setCopied] = React.useState(false);
@@ -220,29 +227,31 @@ const Game: React.FC<GameProps> = ({ player }) => {
   if (gameData.gameState === types.GameState.Init) {
     return (
       <>
-        <JoinGame gameData={gameData} player={player} />
-
-        <JoinTeam gameData={gameData} player={player} />
-
-        <CopyToClipboard
-          text={document.location.href}
-          onCopy={(_: string, result: boolean) => {
-            if (result === true) {
-              setCopied(true);
-            }
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <Button
-              variant="contained"
-              color="secondary"
-              startIcon={<FileCopyIcon />}
+        <section className={classnames(classes.centeredSection, classes.copy)}>
+          <CopyToClipboard
+            text={document.location.href}
+            onCopy={(_: string, result: boolean) => {
+              if (result === true) {
+                setCopied(true);
+              }
+            }}
+          >
+            <section
+              className={classnames(classes.centeredSection, classes.columns)}
             >
-              Copy link to game
-            </Button>
-            {copied && <Typography>Copied!</Typography>}
-          </div>
-        </CopyToClipboard>
+              <Button
+                variant="contained"
+                color="secondary"
+                startIcon={<FileCopyIcon />}
+              >
+                Copy link to game
+              </Button>
+              {copied && <Typography>Copied!</Typography>}
+            </section>
+          </CopyToClipboard>
+        </section>
+        <JoinGame gameData={gameData} player={player} />
+        <JoinTeam gameData={gameData} player={player} />
       </>
     );
   }

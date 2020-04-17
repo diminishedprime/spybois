@@ -44,8 +44,14 @@ const auth = firebase.auth();
 export const db = firebase.firestore();
 
 const useStylesCreateGame = makeStyles((theme) => ({
-  root: {
+  newGame: {
     margin: theme.spacing(1, 0, 1),
+  },
+  centeredSection: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: theme.spacing(2),
   },
 }));
 
@@ -61,17 +67,17 @@ const CreateGame: React.FC<{ uid: string }> = ({ uid }) => {
   }, [uid, nick, history]);
   const classes = useStylesCreateGame();
   return (
-    <>
+    <section className={classes.centeredSection}>
       <NickName onChange={setNick} />
       <Button
-        className={classes.root}
+        className={classes.newGame}
         color="primary"
         variant="contained"
         onClick={newGame}
       >
         New Game
       </Button>
-    </>
+    </section>
   );
 };
 
@@ -117,6 +123,7 @@ const Lobby: React.FC<{ uid: string }> = ({ uid }) => {
                 )}
               </Typography>
               <Button
+                className={classes.fab}
                 color="primary"
                 variant="contained"
                 onClick={() => {
@@ -172,15 +179,27 @@ const useStyles = makeStyles((theme) => ({
   },
   gameCards: {
     display: "flex",
+    flexWrap: "wrap",
+    justifyContent: "center",
   },
   gameCard: {
     margin: theme.spacing(1),
     padding: theme.spacing(1),
+    width: theme.spacing(30),
     flexGrow: 1,
+    display: "flex",
+    flexDirection: "column",
+    "& :not(:last-child)": {
+      flexGrow: "1",
+    },
   },
   nick: { color: theme.palette.secondary.main },
-
   pageContent: {},
+  fab: {
+    marginTop: theme.spacing(1),
+    justifySelf: "flex-end",
+    alignSelf: "flex-end",
+  },
 }));
 
 let navigateBackTo: null | string = null;
@@ -234,8 +253,13 @@ const App = () => {
         </Switch>
       </div>
 
-      {user !== undefined && <SignOut />}
-      <Link to="/">Home</Link>
+      {/* TODO - I need to figure out if I want to support these functions or not. */}
+      {false && (
+        <>
+          {user !== undefined && <SignOut />}
+          <Link to="/">Home</Link>
+        </>
+      )}
     </div>
   );
 };
