@@ -91,7 +91,10 @@ const Lobby: React.FC<{ uid: string }> = ({ uid }) => {
 
   return (
     <>
-      <Typography variant="h3">Lobby</Typography>
+      <Typography variant="h4" className={classes.heading}>
+        Spybois Lobby
+      </Typography>
+      <CreateGame uid={uid} />
       <section className={classes.gameCards}>
         {games.map((game) => {
           const nicks = game.playerIds
@@ -136,7 +139,6 @@ const Lobby: React.FC<{ uid: string }> = ({ uid }) => {
           );
         })}
       </section>
-      <CreateGame uid={uid} />
     </>
   );
 };
@@ -176,6 +178,10 @@ const useStyles = makeStyles((theme) => ({
     margin: "0 auto",
     padding: theme.spacing(1),
     maxWidth: theme.breakpoints.width("md"),
+  },
+  heading: {
+    textAlign: "center",
+    fontFamily: "cursive",
   },
   gameCards: {
     display: "flex",
