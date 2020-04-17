@@ -55,17 +55,19 @@ interface Player {
   nick?: string;
 }
 
-interface GameDataInit {
-  gameState: GameState.Init;
-  playerIds: string[];
+interface BaseGameData {
   players: Player[];
+  playerIds: string[];
+}
+
+interface GameDataInit extends BaseGameData {
+  gameState: GameState.Init;
   team1Spy?: Player;
   team2Spy?: Player;
 }
 
-interface GameDataReady {
+interface GameDataReady extends BaseGameData {
   gameState: GameState.Ready;
-  players: Player[];
   team1Spy: Player;
   team2Spy: Player;
 }
@@ -88,6 +90,17 @@ const gameDoc = (db: firebase.firestore.Firestore, gameUid: string) => {
   return gamesCollection(db).doc(gameUid);
 };
 
+const joinGame = async (
+  db: firebase.firestore.Firestore,
+  gameUid: string,
+  player: Player
+): Promise<void> => {
+  return await gameDoc(db, gameUid).update({
+    playerIds: firebase.firestore.FieldValue.arrayUnion(player.id),
+    players: firebase.firestore.FieldValue.arrayUnion(player)
+  });
+};
+
 const subscribeToGamesWithPlayer = (
   db: firebase.firestore.Firestore,
   uid: string,
@@ -108,11 +121,12 @@ const subscribeToGamesWithPlayer = (
 const subcribeToGameChanges = (
   db: firebase.firestore.Firestore,
   gameUid: string,
-  cb: (gameData: GameData | undefined) => void
+  cb: (gameData: WithID<GameData> | undefined) => void
 ): (() => void) => {
   const unSub = gameDoc(db, gameUid).onSnapshot(game => {
     const data = game.data();
-    cb(data as GameData);
+    const withId = { ...data, id: game.id };
+    cb(withId as WithID<GameData>);
   });
   return unSub;
 };
@@ -121,9 +135,33 @@ enum StorageKey {
   Nick = "@spybois/nick"
 }
 
+interface NickNameProps {
+  onChange?: (nick: string) => void;
+}
+const NickName: React.FC<NickNameProps> = ({ onChange }) => {
+  const [nick, setNick] = useLocalStorage<string | undefined>(
+    StorageKey.Nick,
+    undefined,
+    { raw: true }
+  );
+  React.useEffect(() => {
+    if (onChange !== undefined && nick !== undefined) {
+      onChange(nick);
+    }
+  }, [nick]);
+
+  return (
+    <TextField
+      value={nick}
+      onChange={e => setNick(e.target.value)}
+      label="Nickname"
+    />
+  );
+};
+
 const CreateGame: React.FC<{ uid: string }> = ({ uid }) => {
   const history = useHistory();
-  const [nick, setNick] = useLocalStorage(StorageKey.Nick, "", { raw: true });
+  const [nick, setNick] = React.useState("");
   const newGame = React.useCallback(() => {
     gamesCollection(db)
       .add(newGameWithSelf(uid, nick))
@@ -134,11 +172,7 @@ const CreateGame: React.FC<{ uid: string }> = ({ uid }) => {
   const classes = useStylesCreateGame();
   return (
     <>
-      <TextField
-        value={nick}
-        onChange={e => setNick(e.target.value)}
-        label="Nickname"
-      />
+      <NickName onChange={setNick} />
       <Button
         className={classes.root}
         color="primary"
@@ -187,9 +221,38 @@ interface GameParams {
   gameUid: string;
 }
 
-const Game = () => {
+const JoinGame: React.FC<{ player: Player; gameData: WithID<GameData> }> = ({
+  player,
+  gameData
+}) => {
+  // You shouldn't see this button if you're already in the game.
+  if (gameData.playerIds.includes(player.id)) {
+    return null;
+  }
+
+  const { gameState } = gameData;
+  // Games are only allowed to be joined if they haven't started already (at least for now.)
+  if (gameState === GameState.Init || gameState === GameState.Ready) {
+    return (
+      <>
+        <NickName />
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => {
+            joinGame(db, gameData.id, player);
+          }}
+        >
+          Join Game!
+        </Button>
+      </>
+    );
+  }
+  return null;
+};
+const Game: React.FC<{ player: Player }> = ({ player }) => {
   const { gameUid } = useParams<GameParams>();
-  const [gameData, setGameData] = React.useState<GameData>();
+  const [gameData, setGameData] = React.useState<WithID<GameData>>();
   const [copied, setCopied] = React.useState(false);
   React.useEffect(() => {
     if (copied) {
@@ -212,12 +275,17 @@ const Game = () => {
 
   // TODO default to spectator view;
 
+  if (gameData === undefined) {
+    return null;
+  }
+
   return (
     <>
       <div>Game: {gameUid}</div>
+      <JoinGame gameData={{ ...gameData, id: gameUid }} player={player} />
       <CopyToClipboard
         text={document.location.href}
-        onCopy={(text: string, result: boolean) => {
+        onCopy={(_: string, result: boolean) => {
           if (result === true) {
             setCopied(true);
           }
@@ -292,6 +360,12 @@ let navigateBackTo: null | string = null;
 const App = () => {
   const history = useHistory();
   const [user, setUser] = React.useState<firebase.User>();
+  // TODO - this should really come from redux.
+  const [nick] = useLocalStorage<string | undefined>(
+    StorageKey.Nick,
+    undefined,
+    { raw: true }
+  );
   const classes = useStyles();
 
   React.useEffect(() => {
@@ -320,7 +394,7 @@ const App = () => {
             {user && <Lobby uid={user.uid} />}
           </Route>
           <Route exact path="/games/:gameUid">
-            {user && <Game />}
+            {user && <Game player={{ id: user.uid, nick }} />}
           </Route>
           <Route exact path="/login">
             <SignIn />
