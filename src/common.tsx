@@ -16,12 +16,12 @@ export const NickName: React.FC<NickNameProps> = ({ onChange }) => {
     if (onChange !== undefined && nick !== undefined) {
       onChange(nick);
     }
-  }, [nick]);
+  }, [nick, onChange]);
 
   return (
     <TextField
       value={nick}
-      onChange={e => setNick(e.target.value)}
+      onChange={(e) => setNick(e.target.value)}
       label="Nickname"
     />
   );

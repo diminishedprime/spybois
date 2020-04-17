@@ -1,5 +1,3 @@
-import type { GameState } from "./enums";
-
 declare interface Player {
   id: string;
   nick?: string;

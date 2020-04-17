@@ -57,7 +57,7 @@ const CreateGame: React.FC<{ uid: string }> = ({ uid }) => {
       .then((nuGame) => {
         history.push(`/games/${nuGame.id}`);
       });
-  }, [uid, nick]);
+  }, [uid, nick, history]);
   const classes = useStylesCreateGame();
   return (
     <>
@@ -80,7 +80,7 @@ const Lobby: React.FC<{ uid: string }> = ({ uid }) => {
   const history = useHistory();
   React.useEffect(() => {
     return subscribeToGamesWithPlayer(db, uid, setGames);
-  }, []);
+  }, [uid]);
 
   return (
     <>
@@ -198,7 +198,7 @@ const App = () => {
         }
       }
     });
-  }, []);
+  }, [history]);
 
   return (
     <div className={classes.root}>
