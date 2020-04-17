@@ -23,7 +23,8 @@ import {
   subscribeToGamesWithPlayer,
 } from "./db";
 import { NickName } from "./common";
-import * as enums from "./enums";
+import * as types from "./types";
+import { WithID, GameData } from "./types";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAsz9rfRC01eFIfo_FvZ2x3-2DHf_2Ulws",
@@ -176,7 +177,7 @@ const App = () => {
   const [user, setUser] = React.useState<firebase.User>();
   // TODO - this should really come from redux.
   const [nick] = useLocalStorage<string | undefined>(
-    enums.StorageKey.Nick,
+    types.StorageKey.Nick,
     undefined,
     { raw: true }
   );

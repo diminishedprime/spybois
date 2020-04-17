@@ -7,7 +7,8 @@ import { CopyToClipboard } from "react-copy-to-clipboard";
 import { NickName } from "./common";
 import { subcribeToGameChanges, joinGame } from "./db";
 import { db } from "./index";
-import * as enums from "./enums";
+import * as types from "./types";
+import { Player, WithID, GameData } from "./types";
 
 interface JoinGameProps {
   player: Player;
@@ -23,8 +24,8 @@ const JoinGame: React.FC<JoinGameProps> = ({ player, gameData }) => {
   const { gameState } = gameData;
   // Games are only allowed to be joined if they haven't started already (at least for now.)
   if (
-    gameState === enums.GameState.Init ||
-    gameState === enums.GameState.Ready
+    gameState === types.GameState.Init ||
+    gameState === types.GameState.Ready
   ) {
     return (
       <>

@@ -1,11 +1,12 @@
 import firebase from "firebase/app";
-import * as enums from "./enums";
+import * as types from "./types";
+import { GameData, Player, WithID } from "./types";
 
 export const newGameWithSelf = (uid: string, nick: string): GameData => {
   return {
     playerIds: [uid],
     players: [{ id: uid, nick }],
-    gameState: enums.GameState.Init,
+    gameState: types.GameState.Init,
   };
 };
 

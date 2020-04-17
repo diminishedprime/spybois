@@ -1,14 +1,14 @@
 import React from "react";
 import TextField from "@material-ui/core/TextField";
 import { useLocalStorage } from "react-use";
-import * as enums from "./enums";
+import * as types from "./types";
 
 interface NickNameProps {
   onChange?: (nick: string) => void;
 }
 export const NickName: React.FC<NickNameProps> = ({ onChange }) => {
   const [nick, setNick] = useLocalStorage<string | undefined>(
-    enums.StorageKey.Nick,
+    types.StorageKey.Nick,
     undefined,
     { raw: true }
   );
