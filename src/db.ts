@@ -74,7 +74,7 @@ export const joinTeam = async (
     ...(gameData.team2AgentIds || []),
   ];
   if (ids.includes(player.id)) {
-    console.log("Already on team", { gameData, player, team, role });
+    console.info("Already on team", { gameData, player, team, role });
     return;
   }
   let updateObject: Partial<UpdateGame> = {};
@@ -128,9 +128,13 @@ export const subcribeToGameChanges = (
   cb: (gameData: WithID<GameData> | undefined) => void
 ): (() => void) => {
   const unSub = gameDoc(db, gameUid).onSnapshot((game) => {
-    const data = game.data();
-    const withId = { ...data, id: game.id };
-    cb(withId as WithID<GameData>);
+    if (game.exists) {
+      const data = game.data();
+      const withId = { ...data, id: game.id };
+      cb(withId as WithID<GameData>);
+    } else {
+      cb(undefined);
+    }
   });
   return unSub;
 };

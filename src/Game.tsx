@@ -1,5 +1,5 @@
 import React from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useHistory } from "react-router-dom";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
@@ -139,6 +139,7 @@ interface GameProps {
 }
 
 const Game: React.FC<GameProps> = ({ player }) => {
+  const history = useHistory();
   const { gameUid } = useParams<GameParams>();
   const [gameData, setGameData] = React.useState<WithID<GameData>>();
   const [copied, setCopied] = React.useState(false);
@@ -156,12 +157,13 @@ const Game: React.FC<GameProps> = ({ player }) => {
     return subcribeToGameChanges(db, gameUid, (d) => {
       if (d === undefined) {
         // handle case where game is not found.
+        history.push("/");
       }
       setGameData(d);
     });
   }, [gameUid]);
 
-  // TODO default to spectator view;
+  // TODO - default to spectator view;
 
   if (gameData === undefined) {
     return null;
