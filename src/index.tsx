@@ -45,12 +45,12 @@ export const db = firebase.firestore();
 
 const useStylesCreateGame = makeStyles((theme) => ({
   newGame: {
-    margin: theme.spacing(1, 0, 1),
+    margin: theme.spacing(0, 1),
+    alignSelf: "flex-end",
   },
   centeredSection: {
     display: "flex",
     justifyContent: "center",
-    alignItems: "center",
     marginTop: theme.spacing(2),
   },
 }));
