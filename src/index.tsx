@@ -137,7 +137,8 @@ const CreateGame: React.FC<{ uid: string }> = ({ uid }) => {
       <TextField
         value={nick}
         onChange={e => setNick(e.target.value)}
-      ></TextField>
+        label="Nickname"
+      />
       <Button
         className={classes.root}
         color="primary"
