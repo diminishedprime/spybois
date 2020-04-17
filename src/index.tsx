@@ -14,10 +14,12 @@ import {
 } from "react-router-dom";
 import Button from "@material-ui/core/Button";
 import Card from "@material-ui/core/Card";
+import TextField from "@material-ui/core/TextField";
 import Typography from "@material-ui/core/Typography";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
 import { makeStyles } from "@material-ui/core/styles";
 import { CopyToClipboard } from "react-copy-to-clipboard";
+import { useLocalStorage } from "react-use";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAsz9rfRC01eFIfo_FvZ2x3-2DHf_2Ulws",
@@ -48,24 +50,34 @@ enum GameState {
   Ready = "ready"
 }
 
+interface Player {
+  id: string;
+  nick?: string;
+}
+
 interface GameDataInit {
   gameState: GameState.Init;
-  players: string[];
-  team1Spy?: string;
-  team2Spy?: string;
+  playerIds: string[];
+  players: Player[];
+  team1Spy?: Player;
+  team2Spy?: Player;
 }
 
 interface GameDataReady {
   gameState: GameState.Ready;
-  players: string[];
-  team1Spy: string;
-  team2Spy: string;
+  players: Player[];
+  team1Spy: Player;
+  team2Spy: Player;
 }
 
 type GameData = GameDataInit | GameDataReady;
 
-const newGameWithSelf = (uid: string): GameData => {
-  return { players: [uid], gameState: GameState.Init };
+const newGameWithSelf = (uid: string, nick: string): GameData => {
+  return {
+    playerIds: [uid],
+    players: [{ id: uid, nick }],
+    gameState: GameState.Init
+  };
 };
 
 const gamesCollection = (db: firebase.firestore.Firestore) => {
@@ -82,7 +94,7 @@ const subscribeToGamesWithPlayer = (
   cb: (games: WithID<GameData>[]) => void
 ): (() => void) => {
   return gamesCollection(db)
-    .where("players", "array-contains", uid)
+    .where("playerIds", "array-contains", uid)
     .onSnapshot(data => {
       // TODO - there should actually be some checks on the shape of the data.
       const games = data.docs.map(doc => ({
@@ -105,25 +117,36 @@ const subcribeToGameChanges = (
   return unSub;
 };
 
+enum StorageKey {
+  Nick = "@spybois/nick"
+}
+
 const CreateGame: React.FC<{ uid: string }> = ({ uid }) => {
   const history = useHistory();
+  const [nick, setNick] = useLocalStorage(StorageKey.Nick, "", { raw: true });
   const newGame = React.useCallback(() => {
     gamesCollection(db)
-      .add(newGameWithSelf(uid))
+      .add(newGameWithSelf(uid, nick))
       .then(nuGame => {
         history.push(`/games/${nuGame.id}`);
       });
-  }, []);
+  }, [uid, nick]);
   const classes = useStylesCreateGame();
   return (
-    <Button
-      className={classes.root}
-      color="primary"
-      variant="contained"
-      onClick={newGame}
-    >
-      New Game
-    </Button>
+    <>
+      <TextField
+        value={nick}
+        onChange={e => setNick(e.target.value)}
+      ></TextField>
+      <Button
+        className={classes.root}
+        color="primary"
+        variant="contained"
+        onClick={newGame}
+      >
+        New Game
+      </Button>
+    </>
   );
 };
 
