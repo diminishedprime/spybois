@@ -197,20 +197,34 @@ const Lobby: React.FC<{ uid: string }> = ({ uid }) => {
     <>
       <Typography variant="h3">Lobby</Typography>
       <section className={classes.gameCards}>
-        {games.map(game => (
-          <Card key={game.id} className={classes.gameCard}>
-            <Typography variant="body1">Add in player nicknames.</Typography>
-            <Button
-              color="primary"
-              variant="contained"
-              onClick={() => {
-                history.push(`/games/${game.id}`);
-              }}
-            >
-              Rejoin Game
-            </Button>
-          </Card>
-        ))}
+        {games.map(game => {
+          const nicks = game.players.map(p => p.nick).filter(p => p);
+          return (
+            <Card key={game.id} className={classes.gameCard}>
+              <Typography variant="body1">
+                {nicks.length > 0 && (
+                  <>
+                    Join game with{" "}
+                    {nicks.map(nick => (
+                      <span className={classes.nick} key={nick}>
+                        {nick}
+                      </span>
+                    ))}
+                  </>
+                )}
+              </Typography>
+              <Button
+                color="primary"
+                variant="contained"
+                onClick={() => {
+                  history.push(`/games/${game.id}`);
+                }}
+              >
+                Rejoin Game
+              </Button>
+            </Card>
+          );
+        })}
       </section>
       <CreateGame uid={uid} />
     </>
@@ -352,6 +366,8 @@ const useStyles = makeStyles(theme => ({
     padding: theme.spacing(1),
     flexGrow: 1
   },
+  nick: { color: theme.palette.secondary.main },
+
   pageContent: {}
 }));
 
