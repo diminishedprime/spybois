@@ -122,9 +122,6 @@ export const useStyles = makeStyles((theme) => ({
   columns: {
     flexDirection: "column",
   },
-  selected: {
-    color: theme.palette.primary.main,
-  },
   others: {
     color: theme.palette.text.secondary,
   },
@@ -159,6 +156,7 @@ interface JoinTeamProps {
 
 const JoinTeam: React.FC<JoinTeamProps> = ({ player, gameData }) => {
   const classes = useStyles();
+  const teamColors = useTeamTextColor();
   const join = React.useCallback(
     (team: Team, role: Role) => () => {
       joinTeam(db, gameData, player, team, role);
@@ -197,7 +195,7 @@ const JoinTeam: React.FC<JoinTeamProps> = ({ player, gameData }) => {
         </Button>
         <Typography
           variant="body1"
-          className={leaderId === player.id ? classes.selected : classes.others}
+          className={leaderId === player.id ? teamColors[team] : classes.others}
         >
           {leaderId && gameData.nickMap[leaderId]}
         </Typography>
@@ -214,7 +212,7 @@ const JoinTeam: React.FC<JoinTeamProps> = ({ player, gameData }) => {
             variant="body1"
             key={agentID}
             className={
-              agentID === player.id ? classes.selected : classes.others
+              agentID === player.id ? teamColors[team] : classes.others
             }
           >
             {gameData.nickMap[agentID]}
@@ -289,89 +287,6 @@ const JoinGame: React.FC<JoinGameProps> = ({ player, gameData }) => {
     );
   }
   return null;
-};
-
-interface GameParams {
-  gameUid: string;
-}
-
-interface GameProps {
-  player: Player;
-}
-
-const Game: React.FC<GameProps> = ({ player }) => {
-  const classes = useTeamTextColor();
-  const history = useHistory();
-  const { gameUid } = useParams<GameParams>();
-  const [gameData, setGameData] = React.useState<WithID<GameData>>();
-  React.useEffect(() => {
-    return subcribeToGameChanges(db, gameUid, (d) => {
-      if (d === undefined) {
-        // TODO - instead of just redirecting home, this should let the user
-        // know the game doesn't exist.
-        history.push("/");
-      }
-      setGameData(d);
-    });
-  }, [gameUid, history]);
-
-  // TODO - default to spectator view;
-
-  if (gameData === undefined) {
-    return null;
-  }
-
-  if (gameData.gameState === types.GameState.Init) {
-    return (
-      <>
-        <CopyGameToClipboard />
-        <JoinGame gameData={gameData} player={player} />
-        <JoinTeam gameData={gameData} player={player} />
-      </>
-    );
-  }
-
-  if (gameData.gameState === types.GameState.Ready) {
-    return <div>Loading...</div>;
-  }
-
-  if (gameData.gameState === types.GameState.InProgress) {
-    return (
-      <>
-        <LeaderView gameData={gameData} player={player} />
-        <PlayerView gameData={gameData} player={player} />
-        <Override />
-        <Board gameData={gameData} player={player} />
-      </>
-    );
-  }
-
-  // TODO add in a helper function to turn a team enum value into user text.
-  if (gameData.gameState === types.GameState.GameOver) {
-    return (
-      <>
-        <Typography variant="h2">Game Over!</Typography>
-        <Typography variant="h5">
-          <span className={classes[gameData.winner]}>{gameData.winner}</span>{" "}
-          won .
-        </Typography>
-        <Link to={"/"}>Back To Lobby</Link>
-        <Typography variant="body1">
-          TODO - Add in a way to start a new game with everybody from here. It
-          should default to people being on the same team.
-        </Typography>
-      </>
-    );
-  }
-
-  return (
-    <>
-      <div>Game: {gameUid}</div>
-      <JoinGame gameData={gameData} player={player} />
-      <br />
-      {gameData && JSON.stringify(gameData)}
-    </>
-  );
 };
 
 interface BoardProps {
@@ -467,6 +382,89 @@ const Board: React.FC<BoardProps> = ({ gameData, player }) => {
           </Button>
         </DialogActions>
       </Dialog>
+    </>
+  );
+};
+
+interface GameParams {
+  gameUid: string;
+}
+
+interface GameProps {
+  player: Player;
+}
+
+const Game: React.FC<GameProps> = ({ player }) => {
+  const classes = useTeamTextColor();
+  const history = useHistory();
+  const { gameUid } = useParams<GameParams>();
+  const [gameData, setGameData] = React.useState<WithID<GameData>>();
+  React.useEffect(() => {
+    return subcribeToGameChanges(db, gameUid, (d) => {
+      if (d === undefined) {
+        // TODO - instead of just redirecting home, this should let the user
+        // know the game doesn't exist.
+        history.push("/");
+      }
+      setGameData(d);
+    });
+  }, [gameUid, history]);
+
+  // TODO - default to spectator view;
+
+  if (gameData === undefined) {
+    return null;
+  }
+
+  if (gameData.gameState === types.GameState.Init) {
+    return (
+      <>
+        <CopyGameToClipboard />
+        <JoinGame gameData={gameData} player={player} />
+        <JoinTeam gameData={gameData} player={player} />
+      </>
+    );
+  }
+
+  if (gameData.gameState === types.GameState.Ready) {
+    return <div>Loading...</div>;
+  }
+
+  if (gameData.gameState === types.GameState.InProgress) {
+    return (
+      <>
+        <LeaderView gameData={gameData} player={player} />
+        <PlayerView gameData={gameData} player={player} />
+        <Override />
+        <Board gameData={gameData} player={player} />
+      </>
+    );
+  }
+
+  // TODO add in a helper function to turn a team enum value into user text.
+  if (gameData.gameState === types.GameState.GameOver) {
+    return (
+      <>
+        <Typography variant="h2">Game Over!</Typography>
+        <Typography variant="h5">
+          <span className={classes[gameData.winner]}>{gameData.winner}</span>{" "}
+          won .
+        </Typography>
+        <Link to={"/"}>Back To Lobby</Link>
+        <Typography variant="body1">
+          TODO - Add in a way to start a new game with everybody from here. It
+          should default to people being on the same team.
+        </Typography>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <div>Game: {gameUid}</div>
+      <JoinGame gameData={gameData} player={player} />
+      <br />
+      {gameData && JSON.stringify(gameData)}
     </>
   );
 };
