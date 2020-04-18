@@ -1,8 +1,12 @@
 import firebase from "firebase/app";
+// TODO remeve this import.
 import * as types from "./types";
 import {
   GameData,
+  GameState,
+  GameDataInit,
   Player,
+  GameDataGameOver,
   WithID,
   HintData,
   Team,
@@ -75,11 +79,11 @@ export const joinGame = async (
 
 export const unJoinTeam = async (
   db: Firestore,
-  gameData: WithID<GameData>,
+  gameData: WithID<GameDataInit>,
   player: Player
 ): Promise<void> => {
   const id = player.id;
-  let updateObject: Partial<UpdateGame> = {};
+  let updateObject: Partial<UpdateGame<GameDataInit>> = {};
   if (gameData.team1LeaderId === id) {
     updateObject.team1LeaderId = firebase.firestore.FieldValue.delete();
   }
@@ -129,6 +133,10 @@ export const gameReady = (gameData: GameData) => {
   return teamsReady(gameData);
 };
 
+export const otherTeam = (team: Team): Team => {
+  return team === Team.Team1 ? Team.Team2 : Team.Team1;
+};
+
 export const flipCard = async (
   db: Firestore,
   gameData: WithID<GameDataInProgress>,
@@ -144,6 +152,7 @@ export const flipCard = async (
     }
     return c.id === card.id ? { ...c, flipped: true } : c;
   });
+
   let nuCurrentTeam = gameData.currentTeam;
   let nuCurrentHint: HintData | undefined | firebase.firestore.FieldValue =
     gameData.currentHint;
@@ -175,13 +184,43 @@ export const flipCard = async (
       nuCurrentTeam = nuCurrentTeam === Team.Team1 ? Team.Team2 : Team.Team1;
     }
   }
-  let update: Partial<UpdateGame> = {
-    cards: nuCards,
-    currentHint: nuCurrentHint,
-    currentTeam: nuCurrentTeam,
-    previousHints: nuPreviousHints,
-  };
-  return await gameDoc(db, gameData.id).update(update);
+
+  // If the assassin card is now flipped
+  const assassinFlipped = nuCards.find(
+    (a) => a.team === types.NPC.Assassin && a.flipped
+  );
+  // , or if all cards of a team are flipped, the game is over.
+  const team1CardsAllFlipped = nuCards
+    .filter((a) => a.team === Team.Team1)
+    .every((a) => a.flipped);
+  const team2CardsAllFlipped = nuCards
+    .filter((a) => a.team === Team.Team2)
+    .every((a) => a.flipped);
+  if (team1CardsAllFlipped || team2CardsAllFlipped || assassinFlipped) {
+    // The game is over, so update accordingly.
+    const winner = assassinFlipped
+      ? otherTeam(gameData.currentTeam)
+      : team1CardsAllFlipped
+      ? Team.Team1
+      : Team.Team2;
+    const update: UpdateGame<Pick<
+      GameDataGameOver,
+      "winner" | "previousHints" | "gameState"
+    >> = {
+      gameState: GameState.GameOver,
+      winner,
+      previousHints: nuPreviousHints,
+    };
+    return await gameDoc(db, gameData.id).update(update);
+  } else {
+    const update: Partial<UpdateGame> = {
+      cards: nuCards,
+      currentHint: nuCurrentHint,
+      currentTeam: nuCurrentTeam,
+      previousHints: nuPreviousHints,
+    };
+    return await gameDoc(db, gameData.id).update(update);
+  }
 };
 
 export const submitHint = async (

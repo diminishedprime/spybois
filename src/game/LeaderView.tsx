@@ -42,7 +42,7 @@ const LeaderView: React.FC<Props> = ({ gameData, player }) => {
     if (gameData.currentHint === undefined) {
       setLocalHint(defaultHint(gameData.currentTeam));
     }
-  }, [gameData.currentHint]);
+  }, [gameData.currentHint, gameData.currentTeam]);
   const submit = React.useCallback(() => {
     if (localHint.hint === "") {
       return;
@@ -68,7 +68,7 @@ const LeaderView: React.FC<Props> = ({ gameData, player }) => {
     ) {
       setLocalHint((current) => ({ ...current, team: gameData.currentTeam }));
     }
-  }, [localHint.team, gameData.currentTeam]);
+  }, [localHint.team, gameData.currentTeam, localHint]);
 
   console.log("leaderView", { gameData });
 

@@ -19,6 +19,7 @@ export enum GameState {
   Init = "init",
   Ready = "ready",
   InProgress = "in-progress",
+  GameOver = "game-over",
 }
 export enum StorageKey {
   Nick = "@spybois/nick",
@@ -80,7 +81,17 @@ export interface GameDataInProgress extends BaseGameData, Teams {
   currentHint?: HintData;
 }
 
-export type GameData = GameDataReady | GameDataInit | GameDataInProgress;
+export interface GameDataGameOver extends BaseGameData, Teams {
+  gameState: GameState.GameOver;
+  previousHints: PreviousHint[];
+  winner: Team;
+}
+
+export type GameData =
+  | GameDataReady
+  | GameDataInit
+  | GameDataInProgress
+  | GameDataGameOver;
 
 export enum ActionType {
   SetOverride = "set-override",
