@@ -2,6 +2,7 @@ import * as React from "react";
 import { GameDataInProgress, Player, WithID } from "../types";
 import Typography from "@material-ui/core/Typography";
 import { useTeamTextColor } from "../Game";
+import classnames from "classnames";
 
 interface Props {
   player: Player;
@@ -18,12 +19,41 @@ const PlayerView: React.FC<Props> = ({ gameData }) => {
       </Typography>
     );
   }
+
+  const numGuesses = (
+    <span
+      className={classnames(classes[gameData.currentTeam], classes.guessFont)}
+    >
+      {gameData.currentHint.remainingGuesses}
+    </span>
+  );
+
+  const guessesText =
+    gameData.currentHint.remainingGuesses === "infinity" ||
+    gameData.currentHint.remainingGuesses === "zero"
+      ? " guess as many as you dare"
+      : " guesses (and 1 extra) remaining";
+
   return (
-    <>
-      <Typography className={classes[gameData.currentTeam]}>
-        {gameData.currentHint.hint}
-      </Typography>
-    </>
+    <div>
+      <div>
+        <span
+          className={classnames(
+            classes[gameData.currentTeam],
+            classes.guessFont
+          )}
+        >
+          {gameData.currentHint.hint}
+        </span>{" "}
+        <span className={classes.guessFont}>
+          {gameData.currentHint.hintNumber}
+        </span>
+      </div>
+      <div>
+        Guesses left: {numGuesses}
+        {guessesText}
+      </div>
+    </div>
   );
 };
 

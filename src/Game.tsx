@@ -40,6 +40,10 @@ export const useTeamTextColor = makeStyles((theme) => ({
   [types.Team.Team2]: {
     color: theme.palette.secondary.main,
   },
+  guessFont: {
+    fontSize: theme.typography.h5.fontSize,
+    fontWeight: 700,
+  },
 }));
 
 export const useStyles = makeStyles((theme) => ({

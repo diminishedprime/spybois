@@ -148,7 +148,6 @@ export const submitHint = async (
   gameData: WithID<GameData>,
   hint: HintData
 ) => {
-  //
   const update: Partial<UpdateGame> = {
     currentHint: hint,
   };

@@ -34,7 +34,10 @@ const LeaderView: React.FC<Props> = ({ gameData, player }) => {
     if (localHint.hint === "") {
       return;
     }
-    submitHint(db, gameData, localHint);
+    const nuLocal = { ...localHint, submitted: true };
+    submitHint(db, gameData, { ...localHint, submitted: true }).then(() =>
+      setLocalHint(nuLocal)
+    );
   }, [localHint, gameData]);
 
   React.useEffect(() => {
