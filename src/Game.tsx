@@ -48,6 +48,16 @@ export const useTeamTextColor = makeStyles((theme) => ({
 }));
 
 export const useStyles = makeStyles((theme) => ({
+  startLeaveButtons: {
+    display: "flex",
+    justifyContent: "center",
+    "& button": {
+      margin: theme.spacing(1),
+    },
+  },
+  joinTeamContainer: {
+    width: "100%",
+  },
   cards: {
     display: "flex",
     flexWrap: "wrap",
@@ -190,12 +200,12 @@ const JoinTeam: React.FC<JoinTeamProps> = ({ player, gameData }) => {
     return null;
   }
   return (
-    <>
+    <section className={classes.joinTeamContainer}>
       <section className={classes.joinTeam}>
         {teamGroup(Team.Team1)}
         {teamGroup(Team.Team2)}
       </section>
-      <section className={classes.teamGroup}>
+      <section className={classes.startLeaveButtons}>
         <Button
           disabled={!gameReady(gameData) || !onTeam(gameData, player)}
           variant="contained"
@@ -204,8 +214,6 @@ const JoinTeam: React.FC<JoinTeamProps> = ({ player, gameData }) => {
         >
           Start Game
         </Button>
-      </section>
-      <section className={classes.teamGroup}>
         <Button
           disabled={!onTeam(gameData, player)}
           variant="contained"
@@ -215,7 +223,7 @@ const JoinTeam: React.FC<JoinTeamProps> = ({ player, gameData }) => {
           Leave Role
         </Button>
       </section>
-    </>
+    </section>
   );
 };
 
