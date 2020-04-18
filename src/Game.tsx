@@ -33,6 +33,15 @@ import LeaderView from "./game/LeaderView";
 import PlayerView from "./game/PlayerView";
 import { Override } from "./common";
 
+export const useTeamTextColor = makeStyles((theme) => ({
+  [types.Team.Team1]: {
+    color: theme.palette.primary.main,
+  },
+  [types.Team.Team2]: {
+    color: theme.palette.secondary.main,
+  },
+}));
+
 export const useStyles = makeStyles((theme) => ({
   cards: {
     display: "flex",
@@ -315,10 +324,19 @@ const Board: React.FC<BoardProps> = ({ gameData, player }) => {
   const isTeam1Leader = gameData.team1LeaderId === player.id;
   const isTeam2Leader = gameData.team2LeaderId === player.id;
   const isLeader = isTeam1Leader || isTeam2Leader;
+  const hintSubmitted = gameData.hintSubmitted;
   const adminOverride = useSelector((a: State) => a.override);
   const [popupVisible, setPopupVisible] = React.useState(false);
   const [selectedCard, setSelectedCard] = React.useState<types.Card>();
+  const canFlip =
+    selectedCard !== undefined && (adminOverride || hintSubmitted);
   const flip = React.useCallback(() => {
+    if (!canFlip) {
+      return;
+    }
+    // Aww, I was really hoping typescript would be able to suss this one out.
+    // This is only necessary beacuse TS doesn't understand that canFlip means
+    // that selectedCard is not undefined.
     if (selectedCard === undefined) {
       return;
     }
@@ -329,6 +347,7 @@ const Board: React.FC<BoardProps> = ({ gameData, player }) => {
       {(adminOverride || popupVisible) && selectedCard && (
         <>
           <Button
+            className={classes[gameData.currentTeam]}
             onClick={() => {
               setSelectedCard(undefined);
               setPopupVisible(false);
@@ -359,7 +378,12 @@ const Board: React.FC<BoardProps> = ({ gameData, player }) => {
               className={className}
               key={card.id}
               onClick={() => {
-                if (!adminOverride && isLeader) {
+                // If the hint isn't submitted, we shouldn't let the other team guess.
+                if (!hintSubmitted && !adminOverride) {
+                  return;
+                }
+                // Leaders can't flip cards. That'd be real op.
+                if (isLeader && !adminOverride) {
                   return;
                 }
                 if (popupVisible) {

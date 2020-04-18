@@ -1,5 +1,5 @@
 import * as React from "react";
-import { GameDataInProgress, Player, WithID } from "../types";
+import { GameDataInProgress, Player, WithID, HintNumber } from "../types";
 import { isLeader, submitHint } from "../db";
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
@@ -12,8 +12,9 @@ interface Props {
 const LeaderView: React.FC<Props> = ({ gameData, player }) => {
   const leader = isLeader(gameData, player);
   const [localHint, setLocalHint] = React.useState(gameData.hint);
+  const [localHintNumber, setLocalHintNumber] = React.useState<HintNumber>();
   const submit = React.useCallback(() => {
-    if (localHint === "") {
+    if (localHint === "" && gameData.hintNumber !== undefined) {
       return;
     }
     submitHint(db, gameData, localHint);
