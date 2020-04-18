@@ -17,6 +17,8 @@ interface Props {
 const PlayerView: React.FC<Props> = ({ gameData, player }) => {
   const classes = useTeamTextColor();
   const [showConfirmDialog, setShowConfimDialog] = React.useState(false);
+  // TODO - Add in logic to the currentHint that indicates if a guess has
+  // happened or not.
   const canPass = isPlayer(gameData, player) && isYourTurn(gameData, player);
 
   const pass = React.useCallback(() => {
