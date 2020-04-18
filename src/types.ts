@@ -60,8 +60,10 @@ export interface Card {
 
 export interface GameDataInProgress extends BaseGameData, Teams {
   gameState: GameState.InProgress;
-  // TODO - This should be renamed, but I have to also update the functions code for it.
-  words: Card[];
+  cards: Card[];
+  currentTeam: Team;
+  hintSubmitted: boolean;
+  hint: string;
 }
 
 export type GameData = GameDataReady | GameDataInit | GameDataInProgress;

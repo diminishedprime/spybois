@@ -27,10 +27,21 @@ export const addWordsToGame = functions.firestore
         afterData.gameState !== undefined &&
         afterData.gameState === "ready"
       ) {
-        // add the words & update the gameState to be in-progress.
+        const cards = makeBoard();
+        const hintSubmitted = false;
+        const hint = "";
+        const gameState = "in-progress";
+        const currentTeam =
+          cards.filter((w) => w.team === "team1").length === 8
+            ? "team2"
+            : "team1";
+
         await app.firestore().collection("games").doc(gameId).update({
-          gameState: "in-progress",
-          words: makeBoard(),
+          gameState,
+          hintSubmitted,
+          hint,
+          currentTeam,
+          cards,
         });
       }
   });

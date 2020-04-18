@@ -3,8 +3,6 @@ import { useParams, useHistory } from "react-router-dom";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
 import Card from "@material-ui/core/Card";
-import FileCopyIcon from "@material-ui/icons/FileCopy";
-import { CopyToClipboard } from "react-copy-to-clipboard";
 import { NickName } from "./common";
 import {
   subcribeToGameChanges,
@@ -21,8 +19,9 @@ import * as types from "./types";
 import { Player, WithID, GameData, GameDataInit, Team, Role } from "./types";
 import { makeStyles } from "@material-ui/core/styles";
 import classnames from "classnames";
+import CopyGameToClipboard from "./game/CopyGameToClipboard";
 
-const useStyles = makeStyles((theme) => ({
+export const useStyles = makeStyles((theme) => ({
   cards: {
     display: "flex",
     flexWrap: "wrap",
@@ -178,7 +177,7 @@ const JoinTeam: React.FC<JoinTeamProps> = ({ player, gameData }) => {
       </section>
       <section className={classes.teamGroup}>
         <Button
-          disabled={!onTeam}
+          disabled={!onTeam(gameData, player)}
           variant="contained"
           color="default"
           onClick={unJoin}
@@ -236,20 +235,8 @@ interface GameProps {
 
 const Game: React.FC<GameProps> = ({ player }) => {
   const history = useHistory();
-  const classes = useStyles();
   const { gameUid } = useParams<GameParams>();
   const [gameData, setGameData] = React.useState<WithID<GameData>>();
-  const [copied, setCopied] = React.useState(false);
-  React.useEffect(() => {
-    if (copied) {
-      const id = window.setTimeout(() => {
-        setCopied(false);
-      }, 1500);
-      return () => {
-        window.clearTimeout(id);
-      };
-    }
-  }, [copied]);
   React.useEffect(() => {
     return subcribeToGameChanges(db, gameUid, (d) => {
       if (d === undefined) {
@@ -270,33 +257,15 @@ const Game: React.FC<GameProps> = ({ player }) => {
   if (gameData.gameState === types.GameState.Init) {
     return (
       <>
-        <section className={classnames(classes.centeredSection, classes.copy)}>
-          <CopyToClipboard
-            text={document.location.href}
-            onCopy={(_: string, result: boolean) => {
-              if (result === true) {
-                setCopied(true);
-              }
-            }}
-          >
-            <section
-              className={classnames(classes.centeredSection, classes.columns)}
-            >
-              <Button
-                variant="contained"
-                color="secondary"
-                startIcon={<FileCopyIcon />}
-              >
-                Copy link to game
-              </Button>
-              {copied && <Typography>Copied!</Typography>}
-            </section>
-          </CopyToClipboard>
-        </section>
+        <CopyGameToClipboard />
         <JoinGame gameData={gameData} player={player} />
         <JoinTeam gameData={gameData} player={player} />
       </>
     );
+  }
+
+  if (gameData.gameState === types.GameState.Ready) {
+    return <div>Loading...</div>;
   }
 
   if (gameData.gameState === types.GameState.InProgress) {
@@ -354,7 +323,7 @@ const Board: React.FC<BoardProps> = ({ gameData, player }) => {
         </>
       )}
       <div className={classes.cards}>
-        {gameData.words.map((card) => {
+        {gameData.cards.map((card) => {
           const className = classnames(classes.card, {
             [classes[card.team]]:
               isTeam1Leader || isTeam2Leader || card.flipped,

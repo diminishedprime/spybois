@@ -9,7 +9,11 @@ import {
   GameDataInProgress,
 } from "./types";
 
-export const newFullGame = (uid: string, nick: string): GameData => {
+export const newFullGame = (
+  uid: string,
+  nick: string,
+  amGuesser = true
+): GameData => {
   return {
     nickMap: {
       [uid]: nick,
@@ -21,7 +25,7 @@ export const newFullGame = (uid: string, nick: string): GameData => {
     playerIds: [uid, "a", "b", "c", "d"],
     gameState: types.GameState.Init,
     team1AgentIds: ["a"],
-    team1LeaderId: "b",
+    team1LeaderId: amGuesser ? uid : "b",
     team2AgentIds: ["c"],
     team2LeaderId: "d",
   };
@@ -120,11 +124,11 @@ export const flipCard = async (
   gameData: WithID<GameDataInProgress>,
   card: types.Card
 ): Promise<void> => {
-  const nuCards = gameData.words.map((c) =>
+  const nuCards = gameData.cards.map((c) =>
     c.id === card.id ? { ...c, flipped: true } : c
   );
   let update: Partial<UpdateGame> = {
-    words: nuCards,
+    cards: nuCards,
   };
   return await gameDoc(db, gameData.id).update(update);
 };
