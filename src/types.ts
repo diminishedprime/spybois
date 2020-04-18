@@ -51,7 +51,7 @@ export interface GameDataReady extends BaseGameData, Teams {
   gameState: GameState.Ready;
 }
 
-export interface Word {
+export interface Card {
   id: string;
   value: string;
   flipped: boolean;
@@ -60,7 +60,8 @@ export interface Word {
 
 export interface GameDataInProgress extends BaseGameData, Teams {
   gameState: GameState.InProgress;
-  words: Word[];
+  // TODO - This should be renamed, but I have to also update the functions code for it.
+  words: Card[];
 }
 
 export type GameData = GameDataReady | GameDataInit | GameDataInProgress;

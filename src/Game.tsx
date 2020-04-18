@@ -14,6 +14,7 @@ import {
   onTeam,
   gameReady,
   startGame,
+  flipCard,
 } from "./db";
 import { db } from "./index";
 import * as types from "./types";
@@ -22,19 +23,30 @@ import { makeStyles } from "@material-ui/core/styles";
 import classnames from "classnames";
 
 const useStyles = makeStyles((theme) => ({
+  cards: {
+    display: "flex",
+    flexWrap: "wrap",
+  },
   card: {
     padding: theme.spacing(1),
+    width: "15%",
+    margin: theme.spacing(1),
+    textAlign: "center",
   },
   [types.Team.Team1]: {
+    color: theme.palette.getContrastText(theme.palette.primary.main),
     backgroundColor: theme.palette.primary.main,
   },
   [types.Team.Team2]: {
+    color: theme.palette.getContrastText(theme.palette.secondary.main),
     backgroundColor: theme.palette.secondary.main,
   },
   [types.NPC.Assassin]: {
-    backgroundColor: theme.palette.error.main,
+    color: theme.palette.getContrastText(theme.palette.common.black),
+    backgroundColor: theme.palette.common.black,
   },
   [types.NPC.Bystander]: {
+    color: theme.palette.getContrastText(theme.palette.info.main),
     backgroundColor: theme.palette.info.main,
   },
   copy: {
@@ -302,7 +314,7 @@ const Game: React.FC<GameProps> = ({ player }) => {
 };
 
 interface BoardProps {
-  gameData: types.GameDataInProgress;
+  gameData: WithID<types.GameDataInProgress>;
   player: Player;
 }
 
@@ -310,19 +322,61 @@ const Board: React.FC<BoardProps> = ({ gameData, player }) => {
   const classes = useStyles();
   const isTeam1Leader = gameData.team1LeaderId === player.id;
   const isTeam2Leader = gameData.team2LeaderId === player.id;
+  const [popupVisible, setPopupVisible] = React.useState(false);
+  const [selectedCard, setSelectedCard] = React.useState<types.Card>();
+  const flip = React.useCallback(() => {
+    if (selectedCard === undefined) {
+      return;
+    }
+    flipCard(db, gameData, selectedCard);
+  }, [selectedCard, gameData]);
   return (
-    <div>
-      {gameData.words.map((word) => {
-        const className = classnames(classes.card, {
-          [classes[word.team]]: isTeam1Leader || isTeam2Leader,
-        });
-        return (
-          <Card className={className} key={word.id}>
-            {word.value}
-          </Card>
-        );
-      })}
-    </div>
+    <>
+      {popupVisible && selectedCard && (
+        <>
+          <Button
+            onClick={() => {
+              setSelectedCard(undefined);
+              setPopupVisible(false);
+              flip();
+            }}
+          >
+            {selectedCard.value}
+          </Button>
+          <Button
+            onClick={() => {
+              setSelectedCard(undefined);
+              setPopupVisible(false);
+            }}
+          >
+            Nevermind
+          </Button>
+        </>
+      )}
+      <div className={classes.cards}>
+        {gameData.words.map((card) => {
+          const className = classnames(classes.card, {
+            [classes[card.team]]:
+              isTeam1Leader || isTeam2Leader || card.flipped,
+          });
+          return (
+            <Card
+              className={className}
+              key={card.id}
+              onClick={() => {
+                if (popupVisible) {
+                  return;
+                }
+                setPopupVisible(true);
+                setSelectedCard(card);
+              }}
+            >
+              {card.value}
+            </Card>
+          );
+        })}
+      </div>
+    </>
   );
 };
 

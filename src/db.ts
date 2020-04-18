@@ -1,6 +1,13 @@
 import firebase from "firebase/app";
 import * as types from "./types";
-import { GameData, Player, WithID, Team, Role } from "./types";
+import {
+  GameData,
+  Player,
+  WithID,
+  Team,
+  Role,
+  GameDataInProgress,
+} from "./types";
 
 export const newFullGame = (uid: string, nick: string): GameData => {
   return {
@@ -106,6 +113,20 @@ export const teamsReady = (gameData: GameData) => {
 
 export const gameReady = (gameData: GameData) => {
   return teamsReady(gameData);
+};
+
+export const flipCard = async (
+  db: Firestore,
+  gameData: WithID<GameDataInProgress>,
+  card: types.Card
+): Promise<void> => {
+  const nuCards = gameData.words.map((c) =>
+    c.id === card.id ? { ...c, flipped: true } : c
+  );
+  let update: Partial<UpdateGame> = {
+    words: nuCards,
+  };
+  return await gameDoc(db, gameData.id).update(update);
 };
 
 export const startGame = async (
