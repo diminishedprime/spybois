@@ -1,5 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
+import { Override } from "./common";
 import * as serviceWorker from "./serviceWorker";
 import { Provider, useSelector } from "react-redux";
 import orange from "@material-ui/core/colors/orange";
@@ -63,6 +64,7 @@ const useStylesCreateGame = makeStyles((theme) => ({
 const CreateGame: React.FC<{ uid: string }> = ({ uid }) => {
   const history = useHistory();
   const [nick, setNick] = React.useState("");
+  const override = useSelector((s: State) => s.override);
   const debugNewGame = React.useCallback(() => {
     gamesCollection(db)
       .add(newFullGame(uid, nick))
@@ -91,7 +93,7 @@ const CreateGame: React.FC<{ uid: string }> = ({ uid }) => {
       >
         New Game
       </Button>
-      <Button onClick={debugNewGame}>Debug New Game</Button>
+      {override && <Button onClick={debugNewGame}>Debug New Game</Button>}
     </section>
   );
 };
@@ -109,6 +111,8 @@ const Lobby: React.FC<{ uid: string }> = ({ uid }) => {
       <Typography variant="h4" className={classes.heading}>
         Spybois Lobby
       </Typography>
+
+      <Override />
       <CreateGame uid={uid} />
       <section className={classes.gameCards}>
         {games.map((game) => {
