@@ -197,7 +197,8 @@ const Lobby: React.FC<{ uid: string }> = ({ uid }) => {
   );
 };
 
-const SignIn = () => {
+const SignIn: React.FC = () => {
+  const classes = useStyles();
   const signIn = React.useCallback(() => {
     const provider = new firebase.auth.GoogleAuthProvider();
     auth
@@ -210,9 +211,17 @@ const SignIn = () => {
       });
   }, []);
   return (
-    <Button color={"primary"} variant="contained" onClick={signIn}>
-      Login With Google
-    </Button>
+    <>
+      <Typography variant="h4" className={classes.heading}>
+        Spybois
+      </Typography>
+      <Typography variant="body1" style={{ marginBottom: "8px" }}>
+        Before you can play, you'll need to login.
+      </Typography>
+      <Button color={"primary"} variant="contained" onClick={signIn}>
+        Login With Google
+      </Button>
+    </>
   );
 };
 
@@ -236,6 +245,7 @@ const useStyles = makeStyles((theme) => ({
   heading: {
     textAlign: "center",
     fontFamily: "cursive",
+    marginBottom: theme.spacing(2),
   },
   gameCards: {
     display: "flex",
