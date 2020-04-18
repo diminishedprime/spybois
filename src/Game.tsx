@@ -4,6 +4,7 @@ import { useParams, useHistory } from "react-router-dom";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
 import Card from "@material-ui/core/Card";
+import { Link } from "react-router-dom";
 import { NickName } from "./common";
 import {
   subcribeToGameChanges,
@@ -263,6 +264,7 @@ interface GameProps {
 }
 
 const Game: React.FC<GameProps> = ({ player }) => {
+  const classes = useTeamTextColor();
   const history = useHistory();
   const { gameUid } = useParams<GameParams>();
   const [gameData, setGameData] = React.useState<WithID<GameData>>();
@@ -304,6 +306,24 @@ const Game: React.FC<GameProps> = ({ player }) => {
         <PlayerView gameData={gameData} player={player} />
         <Override />
         <Board gameData={gameData} player={player} />
+      </>
+    );
+  }
+
+  // TODO add in a helper function to turn a team enum value into user text.
+  if (gameData.gameState === types.GameState.GameOver) {
+    return (
+      <>
+        <Typography variant="h2">Game Over!</Typography>
+        <Typography variant="h5">
+          <span className={classes[gameData.winner]}>{gameData.winner}</span>{" "}
+          won .
+        </Typography>
+        <Link to={"/"}>Back To Lobby</Link>
+        <Typography variant="body1">
+          TODO - Add in a way to start a new game with everybody from here. It
+          should default to people being on the same team.
+        </Typography>
       </>
     );
   }

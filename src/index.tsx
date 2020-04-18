@@ -241,7 +241,11 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   nick: { color: theme.palette.secondary.main },
-  pageContent: {},
+  pageContent: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+  },
   fab: {
     marginTop: theme.spacing(1),
     justifySelf: "flex-end",
