@@ -43,6 +43,9 @@ const firebaseConfig = {
   measurementId: "G-V2NY7J0W6T",
 };
 
+// TODO - Update the stying based on breakpoints. For a given breakpoint,
+// everything should fit without scrolling.
+
 // TODO - All of these things should probably be put into a redux store.
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
