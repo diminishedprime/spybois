@@ -21,6 +21,7 @@ import { useLocalStorage } from "react-use";
 import {
   gamesCollection,
   newGameWithSelf,
+  newFullGame,
   subscribeToGamesWithPlayer,
 } from "./db";
 import { NickName } from "./common";
@@ -60,6 +61,14 @@ const useStylesCreateGame = makeStyles((theme) => ({
 const CreateGame: React.FC<{ uid: string }> = ({ uid }) => {
   const history = useHistory();
   const [nick, setNick] = React.useState("");
+  const debugNewGame = React.useCallback(() => {
+    gamesCollection(db)
+      .add(newFullGame(uid, nick))
+      .then((nuGame) => {
+        history.push(`/games/${nuGame.id}`);
+      });
+  }, [uid, nick, history]);
+
   const newGame = React.useCallback(() => {
     gamesCollection(db)
       .add(newGameWithSelf(uid, nick))
@@ -67,6 +76,7 @@ const CreateGame: React.FC<{ uid: string }> = ({ uid }) => {
         history.push(`/games/${nuGame.id}`);
       });
   }, [uid, nick, history]);
+
   const classes = useStylesCreateGame();
   return (
     <section className={classes.centeredSection}>
@@ -79,6 +89,7 @@ const CreateGame: React.FC<{ uid: string }> = ({ uid }) => {
       >
         New Game
       </Button>
+      <Button onClick={debugNewGame}>Debug New Game</Button>
     </section>
   );
 };

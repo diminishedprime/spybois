@@ -2,6 +2,24 @@ import firebase from "firebase/app";
 import * as types from "./types";
 import { GameData, Player, WithID, Team, Role } from "./types";
 
+export const newFullGame = (uid: string, nick: string): GameData => {
+  return {
+    nickMap: {
+      [uid]: nick,
+      a: "John",
+      b: "Jessica",
+      c: "Newton",
+      d: "Peter the cat",
+    },
+    playerIds: [uid, "a", "b", "c", "d"],
+    gameState: types.GameState.Init,
+    team1AgentIds: ["a"],
+    team1LeaderId: "b",
+    team2AgentIds: ["c"],
+    team2LeaderId: "d",
+  };
+};
+
 export const newGameWithSelf = (uid: string, nick: string): GameData => {
   return {
     nickMap: { [uid]: nick },
