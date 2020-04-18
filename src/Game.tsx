@@ -20,6 +20,7 @@ import { Player, WithID, GameData, GameDataInit, Team, Role } from "./types";
 import { makeStyles } from "@material-ui/core/styles";
 import classnames from "classnames";
 import CopyGameToClipboard from "./game/CopyGameToClipboard";
+import LeaderView from "./game/LeaderView";
 
 export const useStyles = makeStyles((theme) => ({
   cards: {
@@ -269,7 +270,12 @@ const Game: React.FC<GameProps> = ({ player }) => {
   }
 
   if (gameData.gameState === types.GameState.InProgress) {
-    return <Board gameData={gameData} player={player} />;
+    return (
+      <>
+        <LeaderView gameData={gameData} player={player} />
+        <Board gameData={gameData} player={player} />
+      </>
+    );
   }
 
   return (
@@ -291,6 +297,7 @@ const Board: React.FC<BoardProps> = ({ gameData, player }) => {
   const classes = useStyles();
   const isTeam1Leader = gameData.team1LeaderId === player.id;
   const isTeam2Leader = gameData.team2LeaderId === player.id;
+  const isLeader = isTeam1Leader || isTeam2Leader;
   const [popupVisible, setPopupVisible] = React.useState(false);
   const [selectedCard, setSelectedCard] = React.useState<types.Card>();
   const flip = React.useCallback(() => {
@@ -333,6 +340,9 @@ const Board: React.FC<BoardProps> = ({ gameData, player }) => {
               className={className}
               key={card.id}
               onClick={() => {
+                if (isLeader) {
+                  return;
+                }
                 if (popupVisible) {
                   return;
                 }

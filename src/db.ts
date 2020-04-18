@@ -9,6 +9,15 @@ import {
   GameDataInProgress,
 } from "./types";
 
+export const isLeader = (
+  gameData: GameDataInProgress,
+  player: Player
+): boolean => {
+  const isTeam1Leader = gameData.team1LeaderId === player.id;
+  const isTeam2Leader = gameData.team2LeaderId === player.id;
+  return isTeam1Leader || isTeam2Leader;
+};
+
 export const newFullGame = (
   uid: string,
   nick: string,
@@ -129,6 +138,19 @@ export const flipCard = async (
   );
   let update: Partial<UpdateGame> = {
     cards: nuCards,
+  };
+  return await gameDoc(db, gameData.id).update(update);
+};
+
+export const submitHint = async (
+  db: Firestore,
+  gameData: WithID<GameData>,
+  hint: string
+) => {
+  //
+  const update: Partial<UpdateGame> = {
+    hint,
+    hintSubmitted: true,
   };
   return await gameDoc(db, gameData.id).update(update);
 };
