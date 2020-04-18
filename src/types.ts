@@ -1,3 +1,4 @@
+import { Action } from "redux";
 export type WithID<T> = T & { id: string };
 
 export enum Role {
@@ -45,3 +46,18 @@ export interface GameDataReady extends BaseGameData, Teams {
 }
 
 export type GameData = GameDataReady | GameDataInit;
+
+export enum ActionType {
+  SetNick = "set-nick",
+}
+
+export interface SetNickAction extends Action {
+  type: ActionType.SetNick;
+  nick: string;
+}
+
+export type Actions = SetNickAction;
+
+export interface State {
+  nick: string;
+}

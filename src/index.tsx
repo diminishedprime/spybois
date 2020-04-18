@@ -1,6 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import * as serviceWorker from "./serviceWorker";
+import { Provider, useSelector } from "react-redux";
 import firebase from "firebase/app";
 import "firebase/auth";
 import "firebase/firestore";
@@ -24,7 +25,8 @@ import {
 } from "./db";
 import { NickName } from "./common";
 import * as types from "./types";
-import { WithID, GameData } from "./types";
+import { WithID, GameData, Actions, State } from "./types";
+import { store } from "./redux";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAsz9rfRC01eFIfo_FvZ2x3-2DHf_2Ulws",
@@ -214,11 +216,7 @@ const App = () => {
   const history = useHistory();
   const [user, setUser] = React.useState<firebase.User>();
   // TODO - this should really come from redux.
-  const [nick] = useLocalStorage<string | undefined>(
-    types.StorageKey.Nick,
-    undefined,
-    { raw: true }
-  );
+  const nick = useSelector((a: State) => a.nick);
   const classes = useStyles();
 
   React.useEffect(() => {
@@ -272,9 +270,11 @@ const App = () => {
 
 ReactDOM.render(
   <React.StrictMode>
-    <Router>
-      <App />
-    </Router>
+    <Provider<Actions> store={store}>
+      <Router>
+        <App />
+      </Router>
+    </Provider>
   </React.StrictMode>,
   document.getElementById("root")
 );
