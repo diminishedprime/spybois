@@ -336,6 +336,21 @@ export const joinTeam = async (
   return await gameDoc(db, gameData.id).update(updateObject);
 };
 
+export const deleteOldFinishedGames = async (db: Firestore, uid: string) => {
+  const toDelete = await gamesCollection(db)
+    .where("playerIds", "array-contains", uid)
+    .where("gameState", "==", GameState.GameOver)
+    .get();
+
+  const batch = db.batch();
+  toDelete.forEach((doc) => {
+    // For each doc, add a delete operation to the batch
+    batch.delete(doc.ref);
+  });
+  console.log("deleting games", { batch });
+  return await batch.commit();
+};
+
 export const subscribeToGamesWithPlayer = (
   db: Firestore,
   uid: string,

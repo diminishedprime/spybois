@@ -27,6 +27,7 @@ import {
   newGameWithSelf,
   newFullGame,
   subscribeToGamesWithPlayer,
+  deleteOldFinishedGames,
 } from "./db";
 import { NickName } from "./common";
 import { WithID, GameData, Actions, State } from "./types";
@@ -127,6 +128,11 @@ const Lobby: React.FC<{ uid: string }> = ({ uid }) => {
   const classes = useStyles();
   const [games, setGames] = React.useState<WithID<GameData>[]>([]);
   const history = useHistory();
+
+  React.useEffect(() => {
+    deleteOldFinishedGames(db, uid);
+  }, []);
+
   React.useEffect(() => {
     return subscribeToGamesWithPlayer(db, uid, setGames);
   }, [uid]);
