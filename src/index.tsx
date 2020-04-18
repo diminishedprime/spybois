@@ -21,7 +21,6 @@ import Button from "@material-ui/core/Button";
 import Card from "@material-ui/core/Card";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles, createMuiTheme } from "@material-ui/core/styles";
-import { useLocalStorage } from "react-use";
 import {
   gamesCollection,
   newGameWithSelf,
@@ -29,7 +28,6 @@ import {
   subscribeToGamesWithPlayer,
 } from "./db";
 import { NickName } from "./common";
-import * as types from "./types";
 import { WithID, GameData, Actions, State } from "./types";
 import { store } from "./redux";
 

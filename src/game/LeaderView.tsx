@@ -17,7 +17,7 @@ const LeaderView: React.FC<Props> = ({ gameData, player }) => {
       return;
     }
     submitHint(db, gameData, localHint);
-  }, [localHint]);
+  }, [localHint, gameData]);
 
   if (!leader) {
     return null;

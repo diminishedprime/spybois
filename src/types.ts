@@ -1,4 +1,3 @@
-import { Action } from "redux";
 export type WithID<T> = T & { id: string };
 
 export enum Role {
