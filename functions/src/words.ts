@@ -240,7 +240,7 @@ export const makeBoard = (): any[] => {
   // Shuffles in place
   shuffle(words);
   const first25 = words.slice(0, 25);
-  return first25.map((word: string, idx: number) => {
+  const asCards = first25.map((word: string, idx: number) => {
     const id = uuid();
     const value = word;
     const flipped = false;
@@ -268,4 +268,6 @@ export const makeBoard = (): any[] => {
       team,
     };
   });
+  shuffle(asCards);
+  return asCards;
 };
