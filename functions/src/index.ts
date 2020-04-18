@@ -1,18 +1,12 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
+import { makeBoard } from "./words";
 
-// // Start writing Firebase Functions
-// // https://firebase.google.com/docs/functions/typescript
-//
-// export const helloWorld = functions.https.onRequest((request, response) => {
-//  response.send("Hello from Firebase!");
-// });
+const app = admin.initializeApp();
 
-const app = admin.app();
-
-export const addWords = functions.firestore
+export const addWordsToGame = functions.firestore
   .document("/games/{gameId}")
-  .onUpdate((change, context) => {
+  .onUpdate(async (change, context) => {
     // Only add words when the game first goes from init to ready.
     const gameId = context.params.gameId;
     if (gameId === undefined) {
@@ -34,13 +28,9 @@ export const addWords = functions.firestore
         afterData.gameState === "ready"
       ) {
         // add the words & update the gameState to be in-progress.
-        app
-          .firestore()
-          .collection("games")
-          .doc(gameId)
-          .update({
-            gameState: "in-progress",
-            words: [{ id: "a", value: "John", flipped: false, team: "team1" }],
-          });
+        await app.firestore().collection("games").doc(gameId).update({
+          gameState: "in-progress",
+          words: makeBoard(),
+        });
       }
   });

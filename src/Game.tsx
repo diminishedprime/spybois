@@ -2,6 +2,7 @@ import React from "react";
 import { useParams, useHistory } from "react-router-dom";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
+import Card from "@material-ui/core/Card";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import { NickName } from "./common";
@@ -21,6 +22,21 @@ import { makeStyles } from "@material-ui/core/styles";
 import classnames from "classnames";
 
 const useStyles = makeStyles((theme) => ({
+  card: {
+    padding: theme.spacing(1),
+  },
+  [types.Team.Team1]: {
+    backgroundColor: theme.palette.primary.main,
+  },
+  [types.Team.Team2]: {
+    backgroundColor: theme.palette.secondary.main,
+  },
+  [types.NPC.Assassin]: {
+    backgroundColor: theme.palette.error.main,
+  },
+  [types.NPC.Bystander]: {
+    backgroundColor: theme.palette.info.main,
+  },
   copy: {
     marginBottom: theme.spacing(1),
   },
@@ -271,6 +287,10 @@ const Game: React.FC<GameProps> = ({ player }) => {
     );
   }
 
+  if (gameData.gameState === types.GameState.InProgress) {
+    return <Board gameData={gameData} player={player} />;
+  }
+
   return (
     <>
       <div>Game: {gameUid}</div>
@@ -278,6 +298,31 @@ const Game: React.FC<GameProps> = ({ player }) => {
       <br />
       {gameData && JSON.stringify(gameData)}
     </>
+  );
+};
+
+interface BoardProps {
+  gameData: types.GameDataInProgress;
+  player: Player;
+}
+
+const Board: React.FC<BoardProps> = ({ gameData, player }) => {
+  const classes = useStyles();
+  const isTeam1Leader = gameData.team1LeaderId === player.id;
+  const isTeam2Leader = gameData.team2LeaderId === player.id;
+  return (
+    <div>
+      {gameData.words.map((word) => {
+        const className = classnames(classes.card, {
+          [classes[word.team]]: isTeam1Leader || isTeam2Leader,
+        });
+        return (
+          <Card className={className} key={word.id}>
+            {word.value}
+          </Card>
+        );
+      })}
+    </div>
   );
 };
 

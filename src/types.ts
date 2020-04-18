@@ -6,6 +6,11 @@ export enum Role {
   Agent = "agent",
 }
 
+export enum NPC {
+  Bystander = "bystander",
+  Assassin = "assassin",
+}
+
 export enum Team {
   Team1 = "team1",
   Team2 = "team2",
@@ -46,8 +51,16 @@ export interface GameDataReady extends BaseGameData, Teams {
   gameState: GameState.Ready;
 }
 
+export interface Word {
+  id: string;
+  value: string;
+  flipped: boolean;
+  team: Team | NPC;
+}
+
 export interface GameDataInProgress extends BaseGameData, Teams {
   gameState: GameState.InProgress;
+  words: Word[];
 }
 
 export type GameData = GameDataReady | GameDataInit | GameDataInProgress;
