@@ -9,7 +9,7 @@ interface Props {
 }
 const PlayerView: React.FC<Props> = ({ gameData }) => {
   const classes = useTeamTextColor();
-  if (!gameData.hintSubmitted) {
+  if (gameData.currentHint === undefined || !gameData.currentHint.submitted) {
     return (
       <Typography>
         Waiting on{" "}
@@ -20,7 +20,9 @@ const PlayerView: React.FC<Props> = ({ gameData }) => {
   }
   return (
     <>
-      <Typography>{gameData.hint}</Typography>
+      <Typography className={classes[gameData.currentTeam]}>
+        {gameData.currentHint.hint}
+      </Typography>
     </>
   );
 };

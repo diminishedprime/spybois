@@ -4,6 +4,7 @@ import {
   GameData,
   Player,
   WithID,
+  HintData,
   Team,
   Role,
   GameDataInProgress,
@@ -145,12 +146,11 @@ export const flipCard = async (
 export const submitHint = async (
   db: Firestore,
   gameData: WithID<GameData>,
-  hint: string
+  hint: HintData
 ) => {
   //
   const update: Partial<UpdateGame> = {
-    hint,
-    hintSubmitted: true,
+    currentHint: hint,
   };
   return await gameDoc(db, gameData.id).update(update);
 };

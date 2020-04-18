@@ -59,16 +59,20 @@ export interface Card {
 
 export type HintNumber = number | "zero" | "infinity";
 
+export interface HintData {
+  hintNumber: HintNumber;
+  hint: string;
+  team: Team;
+  submitted: boolean;
+  remainingGuesses: HintNumber;
+}
+
 export interface GameDataInProgress extends BaseGameData, Teams {
   gameState: GameState.InProgress;
   cards: Card[];
   currentTeam: Team;
-  hintSubmitted: boolean;
-  hint: string;
-  // This is the hint given by the leader
-  hintNumber?: HintNumber;
-  // This is how many remain. This will use maths if the HintNumber isn't 'zero' or 'infininty'
-  remainingGuesses?: HintNumber;
+  previousHints: HintData[];
+  currentHint?: HintData;
 }
 
 export type GameData = GameDataReady | GameDataInit | GameDataInProgress;

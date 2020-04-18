@@ -28,8 +28,6 @@ export const addWordsToGame = functions.firestore
         afterData.gameState === "ready"
       ) {
         const cards = makeBoard();
-        const hintSubmitted = false;
-        const hint = "";
         const gameState = "in-progress";
         const currentTeam =
           cards.filter((w) => w.team === "team1").length === 8
@@ -38,10 +36,9 @@ export const addWordsToGame = functions.firestore
 
         await app.firestore().collection("games").doc(gameId).update({
           gameState,
-          hintSubmitted,
-          hint,
-          currentTeam,
           cards,
+          currentTeam,
+          previousHints: [],
         });
       }
   });

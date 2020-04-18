@@ -324,7 +324,7 @@ const Board: React.FC<BoardProps> = ({ gameData, player }) => {
   const isTeam1Leader = gameData.team1LeaderId === player.id;
   const isTeam2Leader = gameData.team2LeaderId === player.id;
   const isLeader = isTeam1Leader || isTeam2Leader;
-  const hintSubmitted = gameData.hintSubmitted;
+  const hintSubmitted = gameData.currentHint?.submitted;
   const adminOverride = useSelector((a: State) => a.override);
   const [popupVisible, setPopupVisible] = React.useState(false);
   const [selectedCard, setSelectedCard] = React.useState<types.Card>();
@@ -341,7 +341,7 @@ const Board: React.FC<BoardProps> = ({ gameData, player }) => {
       return;
     }
     flipCard(db, gameData, selectedCard);
-  }, [selectedCard, gameData]);
+  }, [selectedCard, gameData, canFlip]);
   return (
     <>
       {(adminOverride || popupVisible) && selectedCard && (
@@ -382,6 +382,7 @@ const Board: React.FC<BoardProps> = ({ gameData, player }) => {
                 if (!hintSubmitted && !adminOverride) {
                   return;
                 }
+                console.log({ isLeader, adminOverride });
                 // Leaders can't flip cards. That'd be real op.
                 if (isLeader && !adminOverride) {
                   return;
