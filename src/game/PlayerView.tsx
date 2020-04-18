@@ -7,7 +7,7 @@ import classnames from "classnames";
 import Dialog from "@material-ui/core/Dialog";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import DialogActions from "@material-ui/core/DialogActions";
-import { passTurn, isPlayer } from "../db";
+import { passTurn, isPlayer, isYourTurn } from "../db";
 import { db } from "../index";
 
 interface Props {
@@ -17,6 +17,7 @@ interface Props {
 const PlayerView: React.FC<Props> = ({ gameData, player }) => {
   const classes = useTeamTextColor();
   const [showConfirmDialog, setShowConfimDialog] = React.useState(false);
+  const canPass = isPlayer(gameData, player) && isYourTurn(gameData, player);
 
   const pass = React.useCallback(() => {
     passTurn(db, gameData).then(() => {
@@ -71,7 +72,7 @@ const PlayerView: React.FC<Props> = ({ gameData, player }) => {
         {numGuesses}
         {guessesText}
         {/* Add in a check that they have guessed at least once. */}
-        {isPlayer(gameData, player) && (
+        {canPass && (
           <Button
             style={{ marginLeft: "8px" }}
             variant="outlined"

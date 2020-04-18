@@ -23,6 +23,23 @@ export const isLeader = (
   return isTeam1Leader || isTeam2Leader;
 };
 
+export const onSpecificTeam = (
+  gameData: GameDataInProgress,
+  player: Player,
+  team: Team
+): boolean => {
+  const team1Ids = [gameData.team1LeaderId, ...(gameData.team1AgentIds || [])];
+  const team2Ids = [gameData.team2LeaderId, ...(gameData.team2AgentIds || [])];
+  return (team === Team.Team1 ? team1Ids : team2Ids).includes(player.id);
+};
+
+export const isYourTurn = (
+  gameData: GameDataInProgress,
+  player: Player
+): boolean => {
+  return onSpecificTeam(gameData, player, gameData.currentTeam);
+};
+
 export const isPlayer = (
   gameData: GameDataInProgress,
   player: Player
