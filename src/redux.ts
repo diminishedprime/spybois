@@ -1,6 +1,16 @@
 import { createStore, combineReducers } from "redux";
 import { StorageKey, State, Actions, ActionType } from "./types";
 
+const toLocalStorage = async <T>(
+  key: StorageKey,
+  value: T,
+  serializer: (t: T) => string
+) => {
+  const serialized = serializer(value);
+  window.localStorage.setItem(key, serialized);
+  return;
+};
+
 const fromLocalStorage = <T>(
   key: StorageKey,
   deserializer: (s: string) => T
@@ -18,6 +28,7 @@ const nick = (
 ) => {
   switch (action.type) {
     case ActionType.SetNick:
+      toLocalStorage<string>(StorageKey.Nick, action.nick, (a) => a);
       return action.nick;
     default:
       return nick;
