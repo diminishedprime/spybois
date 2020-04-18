@@ -116,7 +116,7 @@ export const startGame = async (
     return;
   }
   let update: Partial<UpdateGame> = {
-    gameState: types.GameState.InProgress,
+    gameState: types.GameState.Ready,
   };
   return await gameDoc(db, gameData.id).update(update);
 };

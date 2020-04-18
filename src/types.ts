@@ -13,7 +13,6 @@ export enum Team {
 
 export enum GameState {
   Init = "init",
-  // This isn't actually used as of now...
   Ready = "ready",
   InProgress = "in-progress",
 }
