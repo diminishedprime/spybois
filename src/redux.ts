@@ -22,6 +22,15 @@ const fromLocalStorage = <T>(
   return deserializer(item);
 };
 
+const override = (override = false, action: Actions) => {
+  switch (action.type) {
+    case ActionType.SetOverride:
+      return action.override;
+    default:
+      return override;
+  }
+};
+
 const nick = (
   nick = fromLocalStorage<string>(StorageKey.Nick, (a) => a) || "",
   action: Actions
@@ -35,7 +44,7 @@ const nick = (
   }
 };
 
-const app = combineReducers<State, Actions>({ nick });
+const app = combineReducers<State, Actions>({ nick, override });
 
 export const store = createStore(app);
 

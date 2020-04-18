@@ -1,4 +1,5 @@
 import React from "react";
+import { useSelector } from "react-redux";
 import { useParams, useHistory } from "react-router-dom";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
@@ -16,11 +17,21 @@ import {
 } from "./db";
 import { db } from "./index";
 import * as types from "./types";
-import { Player, WithID, GameData, GameDataInit, Team, Role } from "./types";
+import {
+  State,
+  Player,
+  WithID,
+  GameData,
+  GameDataInit,
+  Team,
+  Role,
+} from "./types";
 import { makeStyles } from "@material-ui/core/styles";
 import classnames from "classnames";
 import CopyGameToClipboard from "./game/CopyGameToClipboard";
 import LeaderView from "./game/LeaderView";
+import PlayerView from "./game/PlayerView";
+import { Override } from "./common";
 
 export const useStyles = makeStyles((theme) => ({
   cards: {
@@ -34,10 +45,12 @@ export const useStyles = makeStyles((theme) => ({
     textAlign: "center",
   },
   [types.Team.Team1]: {
+    border: `1px solid ${theme.palette.primary.main}`,
     color: theme.palette.getContrastText(theme.palette.primary.main),
     backgroundColor: theme.palette.primary.main,
   },
   [types.Team.Team2]: {
+    border: `1px solid ${theme.palette.secondary.main}`,
     color: theme.palette.getContrastText(theme.palette.secondary.main),
     backgroundColor: theme.palette.secondary.main,
   },
@@ -46,9 +59,11 @@ export const useStyles = makeStyles((theme) => ({
     backgroundColor: theme.palette.common.black,
   },
   [types.NPC.Bystander]: {
+    border: `1px solid ${theme.palette.info.main}`,
     color: theme.palette.getContrastText(theme.palette.info.main),
     backgroundColor: theme.palette.info.main,
   },
+  flipped: { opacity: 0.5 },
   copy: {
     marginBottom: theme.spacing(1),
   },
@@ -273,6 +288,8 @@ const Game: React.FC<GameProps> = ({ player }) => {
     return (
       <>
         <LeaderView gameData={gameData} player={player} />
+        <PlayerView gameData={gameData} player={player} />
+        <Override />
         <Board gameData={gameData} player={player} />
       </>
     );
@@ -298,6 +315,7 @@ const Board: React.FC<BoardProps> = ({ gameData, player }) => {
   const isTeam1Leader = gameData.team1LeaderId === player.id;
   const isTeam2Leader = gameData.team2LeaderId === player.id;
   const isLeader = isTeam1Leader || isTeam2Leader;
+  const adminOverride = useSelector((a: State) => a.override);
   const [popupVisible, setPopupVisible] = React.useState(false);
   const [selectedCard, setSelectedCard] = React.useState<types.Card>();
   const flip = React.useCallback(() => {
@@ -308,7 +326,7 @@ const Board: React.FC<BoardProps> = ({ gameData, player }) => {
   }, [selectedCard, gameData]);
   return (
     <>
-      {popupVisible && selectedCard && (
+      {(adminOverride || popupVisible) && selectedCard && (
         <>
           <Button
             onClick={() => {
@@ -334,13 +352,14 @@ const Board: React.FC<BoardProps> = ({ gameData, player }) => {
           const className = classnames(classes.card, {
             [classes[card.team]]:
               isTeam1Leader || isTeam2Leader || card.flipped,
+            [classes.flipped]: card.flipped,
           });
           return (
             <Card
               className={className}
               key={card.id}
               onClick={() => {
-                if (isLeader) {
+                if (!adminOverride && isLeader) {
                   return;
                 }
                 if (popupVisible) {

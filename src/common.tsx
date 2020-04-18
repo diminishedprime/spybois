@@ -3,6 +3,8 @@ import TextField from "@material-ui/core/TextField";
 import { Dispatch } from "redux";
 import { State, Actions, ActionType } from "./types";
 import { useSelector, useDispatch } from "react-redux";
+import Checkbox from "@material-ui/core/Checkbox";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
 
 interface NickNameProps {
   onChange?: (nick: string) => void;
@@ -31,6 +33,28 @@ export const NickName: React.FC<NickNameProps> = ({ onChange }) => {
       value={nick}
       onChange={(e) => setNick(e.target.value)}
       label="Nickname"
+    />
+  );
+};
+
+export const Override: React.FC = () => {
+  const override = useSelector((a: State) => a.override);
+  const dispatch: Dispatch<Actions> = useDispatch();
+  const setOverride = React.useCallback(
+    (checked: boolean) => {
+      dispatch({ type: ActionType.SetOverride, override: checked });
+    },
+    [dispatch]
+  );
+  return (
+    <FormControlLabel
+      control={
+        <Checkbox
+          value={override}
+          onChange={(e) => setOverride(e.target.checked)}
+        />
+      }
+      label="Admin Override"
     />
   );
 };

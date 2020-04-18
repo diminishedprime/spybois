@@ -69,16 +69,23 @@ export interface GameDataInProgress extends BaseGameData, Teams {
 export type GameData = GameDataReady | GameDataInit | GameDataInProgress;
 
 export enum ActionType {
+  SetOverride = "set-override",
   SetNick = "set-nick",
 }
 
-export interface SetNickAction extends Action {
+export interface SetOverride {
+  type: ActionType.SetOverride;
+  override: boolean;
+}
+
+export interface SetNickAction {
   type: ActionType.SetNick;
   nick: string;
 }
 
-export type Actions = SetNickAction;
+export type Actions = SetNickAction | SetOverride;
 
 export interface State {
+  override: boolean;
   nick: string;
 }

@@ -2,6 +2,10 @@ import React from "react";
 import ReactDOM from "react-dom";
 import * as serviceWorker from "./serviceWorker";
 import { Provider, useSelector } from "react-redux";
+import orange from "@material-ui/core/colors/orange";
+import purple from "@material-ui/core/colors/purple";
+import green from "@material-ui/core/colors/green";
+import { ThemeProvider } from "@material-ui/styles";
 import firebase from "firebase/app";
 import "firebase/auth";
 import "firebase/firestore";
@@ -16,7 +20,7 @@ import Game from "./Game";
 import Button from "@material-ui/core/Button";
 import Card from "@material-ui/core/Card";
 import Typography from "@material-ui/core/Typography";
-import { makeStyles } from "@material-ui/core/styles";
+import { makeStyles, createMuiTheme } from "@material-ui/core/styles";
 import { useLocalStorage } from "react-use";
 import {
   gamesCollection,
@@ -279,12 +283,22 @@ const App = () => {
   );
 };
 
+const theme = createMuiTheme({
+  palette: {
+    primary: orange,
+    secondary: purple,
+    info: green,
+  },
+});
+
 ReactDOM.render(
   <React.StrictMode>
     <Provider<Actions> store={store}>
-      <Router>
-        <App />
-      </Router>
+      <ThemeProvider theme={theme}>
+        <Router>
+          <App />
+        </Router>
+      </ThemeProvider>
     </Provider>
   </React.StrictMode>,
   document.getElementById("root")
