@@ -13,7 +13,9 @@ export enum Team {
 
 export enum GameState {
   Init = "init",
+  // This isn't actually used as of now...
   Ready = "ready",
+  InProgress = "in-progress",
 }
 export enum StorageKey {
   Nick = "@spybois/nick",
@@ -45,7 +47,11 @@ export interface GameDataReady extends BaseGameData, Teams {
   gameState: GameState.Ready;
 }
 
-export type GameData = GameDataReady | GameDataInit;
+export interface GameDataInProgress extends BaseGameData, Teams {
+  gameState: GameState.InProgress;
+}
+
+export type GameData = GameDataReady | GameDataInit | GameDataInProgress;
 
 export enum ActionType {
   SetNick = "set-nick",

@@ -5,7 +5,15 @@ import Typography from "@material-ui/core/Typography";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 import { NickName } from "./common";
-import { subcribeToGameChanges, joinGame, joinTeam, unJoinTeam } from "./db";
+import {
+  subcribeToGameChanges,
+  joinGame,
+  joinTeam,
+  unJoinTeam,
+  onTeam,
+  gameReady,
+  startGame,
+} from "./db";
 import { db } from "./index";
 import * as types from "./types";
 import { Player, WithID, GameData, GameDataInit, Team, Role } from "./types";
@@ -67,12 +75,9 @@ const JoinTeam: React.FC<JoinTeamProps> = ({ player, gameData }) => {
     unJoinTeam(db, gameData, player);
   }, [player, gameData]);
 
-  const onTeam = [
-    gameData.team1LeaderId,
-    gameData.team2LeaderId,
-    ...(gameData.team1AgentIds || []),
-    ...(gameData.team2AgentIds || []),
-  ].includes(player.id);
+  const start = React.useCallback(() => {
+    startGame(db, gameData);
+  }, [gameData]);
 
   const teamGroup = (team: Team) => {
     const color = team === Team.Team1 ? "primary" : "secondary";
@@ -84,7 +89,7 @@ const JoinTeam: React.FC<JoinTeamProps> = ({ player, gameData }) => {
       <section className={classes.teamGroup}>
         <Button
           disabled={
-            onTeam ||
+            onTeam(gameData, player) ||
             (team === Team.Team1
               ? gameData.team1LeaderId
               : gameData.team2LeaderId) !== undefined
@@ -102,7 +107,7 @@ const JoinTeam: React.FC<JoinTeamProps> = ({ player, gameData }) => {
           {leaderId && gameData.nickMap[leaderId]}
         </Typography>
         <Button
-          disabled={onTeam}
+          disabled={onTeam(gameData, player)}
           color={color}
           variant="outlined"
           onClick={join(team, Role.Agent)}
@@ -132,6 +137,16 @@ const JoinTeam: React.FC<JoinTeamProps> = ({ player, gameData }) => {
       <section className={classes.joinTeam}>
         {teamGroup(Team.Team1)}
         {teamGroup(Team.Team2)}
+      </section>
+      <section className={classes.teamGroup}>
+        <Button
+          disabled={!gameReady(gameData) || !onTeam(gameData, player)}
+          variant="contained"
+          color="default"
+          onClick={start}
+        >
+          Start Game
+        </Button>
       </section>
       <section className={classes.teamGroup}>
         <Button

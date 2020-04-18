@@ -82,6 +82,45 @@ export const unJoinTeam = async (
 type UpdateGame<T = GameData> = {
   [K in keyof T]: firebase.firestore.FieldValue | T[K];
 };
+
+export const onTeam = (gameData: GameData, player: Player) => {
+  const ids = [
+    gameData.team1LeaderId,
+    ...(gameData.team1AgentIds || []),
+    gameData.team2LeaderId,
+    ...(gameData.team2AgentIds || []),
+  ];
+  return ids.includes(player.id);
+};
+
+export const teamsReady = (gameData: GameData) => {
+  const team1 = [gameData.team1LeaderId, ...(gameData.team1AgentIds || [])];
+  const team2 = [gameData.team2LeaderId, ...(gameData.team2AgentIds || [])];
+  return (
+    team1.length > 1 &&
+    team1.every((a) => a !== undefined) &&
+    team2.length > 1 &&
+    team2.every((a) => a !== undefined)
+  );
+};
+
+export const gameReady = (gameData: GameData) => {
+  return teamsReady(gameData);
+};
+
+export const startGame = async (
+  db: Firestore,
+  gameData: WithID<GameData>
+): Promise<void> => {
+  if (!gameReady(gameData)) {
+    return;
+  }
+  let update: Partial<UpdateGame> = {
+    gameState: types.GameState.InProgress,
+  };
+  return await gameDoc(db, gameData.id).update(update);
+};
+
 export const joinTeam = async (
   db: Firestore,
   gameData: WithID<GameData>,
@@ -90,13 +129,7 @@ export const joinTeam = async (
   role: Role
 ): Promise<void> => {
   // If the player is already on a team, don't do anything.
-  const ids = [
-    gameData.team1LeaderId,
-    ...(gameData.team1AgentIds || []),
-    gameData.team2LeaderId,
-    ...(gameData.team2AgentIds || []),
-  ];
-  if (ids.includes(player.id)) {
+  if (onTeam(gameData, player)) {
     console.info("Already on team", { gameData, player, team, role });
     return;
   }
