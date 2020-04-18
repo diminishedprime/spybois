@@ -2,6 +2,7 @@ import * as React from "react";
 import {
   GameDataInProgress,
   Player,
+  State,
   Team,
   WithID,
   HintData,
@@ -11,6 +12,8 @@ import { isLeader, submitHint } from "../db";
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
 import { db } from "../index";
+import { useStyles, useTeamTextColor } from "../Game";
+import { useSelector } from "react-redux";
 
 interface Props {
   player: Player;
@@ -26,6 +29,9 @@ const defaultHint = (team: Team): HintData => ({
 });
 
 const LeaderView: React.FC<Props> = ({ gameData, player }) => {
+  const classes = useStyles();
+  const override = useSelector((s: State) => s.override);
+  const teamTextColor = useTeamTextColor();
   const leader = isLeader(gameData, player);
   const [localHint, setLocalHint] = React.useState<HintData>(() => {
     if (gameData.currentHint !== undefined) {
@@ -70,8 +76,6 @@ const LeaderView: React.FC<Props> = ({ gameData, player }) => {
     }
   }, [localHint.team, gameData.currentTeam, localHint]);
 
-  console.log("leaderView", { gameData });
-
   const bumpNum = React.useCallback(
     (direction: "up" | "down") => () => {
       setLocalHint((currentHint) => {
@@ -109,12 +113,22 @@ const LeaderView: React.FC<Props> = ({ gameData, player }) => {
     []
   );
 
-  if (!leader) {
+  if (!leader && !override) {
     return null;
   }
 
+  if (gameData.currentHint !== undefined) {
+    return (
+      <section className={classes.leaderViewContainer}>
+        Waiting on{" "}
+        <span className={teamTextColor[gameData.currentTeam]}>agents</span> to
+        guess.
+      </section>
+    );
+  }
+
   return (
-    <>
+    <section className={classes.leaderViewContainer}>
       <TextField
         value={localHint?.hint || ""}
         disabled={localHint.submitted}
@@ -139,7 +153,7 @@ const LeaderView: React.FC<Props> = ({ gameData, player }) => {
       >
         Submit Hint
       </Button>
-    </>
+    </section>
   );
 };
 

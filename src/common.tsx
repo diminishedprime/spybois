@@ -46,6 +46,8 @@ export const Override: React.FC = () => {
     },
     [dispatch]
   );
+  // Remove this if you want to set admin override.
+  return <></>;
   return (
     <FormControlLabel
       control={

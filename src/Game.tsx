@@ -3,7 +3,9 @@ import { useSelector } from "react-redux";
 import { useParams, useHistory } from "react-router-dom";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
-import Card from "@material-ui/core/Card";
+import Dialog from "@material-ui/core/Dialog";
+import DialogTitle from "@material-ui/core/DialogTitle";
+import DialogActions from "@material-ui/core/DialogActions";
 import { Link } from "react-router-dom";
 import { NickName } from "./common";
 import {
@@ -35,6 +37,21 @@ import PlayerView from "./game/PlayerView";
 import { Override } from "./common";
 
 export const useTeamTextColor = makeStyles((theme) => ({
+  playerViewContainer: {
+    margin: theme.spacing(1, 10),
+    display: "flex",
+    width: "80vw",
+    justifyContent: "space-around",
+  },
+  guessContainer: {
+    display: "flex",
+    flexGrow: 1,
+    alignItems: "baseline",
+    justifyContent: "center",
+    "& span": {
+      margin: theme.spacing(0, 1),
+    },
+  },
   [types.Team.Team1]: {
     color: theme.palette.primary.main,
   },
@@ -48,6 +65,9 @@ export const useTeamTextColor = makeStyles((theme) => ({
 }));
 
 export const useStyles = makeStyles((theme) => ({
+  leaderViewContainer: {
+    margin: theme.spacing(0),
+  },
   startLeaveButtons: {
     display: "flex",
     justifyContent: "center",
@@ -60,6 +80,7 @@ export const useStyles = makeStyles((theme) => ({
   },
   cards: {
     display: "flex",
+    justifyContent: "center",
     flexWrap: "wrap",
   },
   card: {
@@ -67,6 +88,13 @@ export const useStyles = makeStyles((theme) => ({
     width: "15%",
     margin: theme.spacing(1),
     textAlign: "center",
+    "& :hover": {
+      color: theme.palette.common.black,
+    },
+    "& :disabled": {
+      backgroundColor: "purple",
+      color: "unset",
+    },
   },
   [types.Team.Team1]: {
     border: `1px solid ${theme.palette.primary.main}`,
@@ -376,28 +404,6 @@ const Board: React.FC<BoardProps> = ({ gameData, player }) => {
   }, [selectedCard, gameData, canFlip]);
   return (
     <>
-      {(adminOverride || popupVisible) && selectedCard && (
-        <>
-          <Button
-            className={classes[gameData.currentTeam]}
-            onClick={() => {
-              setSelectedCard(undefined);
-              setPopupVisible(false);
-              flip();
-            }}
-          >
-            {selectedCard.value}
-          </Button>
-          <Button
-            onClick={() => {
-              setSelectedCard(undefined);
-              setPopupVisible(false);
-            }}
-          >
-            Nevermind
-          </Button>
-        </>
-      )}
       <div className={classes.cards}>
         {gameData.cards.map((card) => {
           const className = classnames(classes.card, {
@@ -406,16 +412,16 @@ const Board: React.FC<BoardProps> = ({ gameData, player }) => {
             [classes.flipped]: card.flipped,
           });
           return (
-            <Card
+            <Button
               className={className}
+              variant="outlined"
               key={card.id}
               onClick={() => {
                 // If the hint isn't submitted, we shouldn't let the other team guess.
                 if (!hintSubmitted && !adminOverride) {
                   return;
                 }
-                console.log({ isLeader, adminOverride });
-                // Leaders can't flip cards. That'd be real op.
+                // Leaders can't flip cards. That'd be op.
                 if (isLeader && !adminOverride) {
                   return;
                 }
@@ -427,10 +433,40 @@ const Board: React.FC<BoardProps> = ({ gameData, player }) => {
               }}
             >
               {card.value}
-            </Card>
+            </Button>
           );
         })}
       </div>
+      <Dialog
+        open={selectedCard !== undefined && popupVisible}
+        onClose={() => {
+          setPopupVisible(false);
+        }}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">Confirm Selection?</DialogTitle>
+        <DialogActions>
+          <Button
+            className={classes[gameData.currentTeam]}
+            onClick={() => {
+              setSelectedCard(undefined);
+              setPopupVisible(false);
+              flip();
+            }}
+          >
+            {selectedCard && selectedCard.value}
+          </Button>
+          <Button
+            onClick={() => {
+              setSelectedCard(undefined);
+              setPopupVisible(false);
+            }}
+          >
+            Nevermind
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };

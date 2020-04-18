@@ -23,6 +23,15 @@ export const isLeader = (
   return isTeam1Leader || isTeam2Leader;
 };
 
+export const isPlayer = (
+  gameData: GameDataInProgress,
+  player: Player
+): boolean => {
+  const isOnTeam1 = gameData.team1AgentIds.includes(player.id);
+  const isOnTeam2 = gameData.team2AgentIds.includes(player.id);
+  return isOnTeam1 || isOnTeam2;
+};
+
 export const newFullGame = (
   uid: string,
   nick: string,
@@ -135,6 +144,29 @@ export const gameReady = (gameData: GameData) => {
 
 export const otherTeam = (team: Team): Team => {
   return team === Team.Team1 ? Team.Team2 : Team.Team1;
+};
+
+export const passTurn = async (
+  db: Firestore,
+  gameData: WithID<GameDataInProgress>
+): Promise<void> => {
+  const currentHint = gameData.currentHint;
+  const nuTeam = otherTeam(gameData.currentTeam);
+  const nuPreviousHints = gameData.previousHints;
+  // This _should_ always be the case.
+  if (currentHint !== undefined) {
+    nuPreviousHints.push({
+      team: currentHint.team,
+      hint: currentHint.hint,
+      hintNumber: currentHint.hintNumber,
+    });
+  }
+  const update: Partial<UpdateGame> = {
+    currentTeam: nuTeam,
+    currentHint: firebase.firestore.FieldValue.delete(),
+    previousHints: nuPreviousHints,
+  };
+  return await gameDoc(db, gameData.id).update(update);
 };
 
 export const flipCard = async (
