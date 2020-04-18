@@ -67,11 +67,16 @@ export interface HintData {
   remainingGuesses: HintNumber;
 }
 
+export type PreviousHint = Omit<
+  Omit<HintData, "remainingGuesses">,
+  "submitted"
+>;
+
 export interface GameDataInProgress extends BaseGameData, Teams {
   gameState: GameState.InProgress;
   cards: Card[];
   currentTeam: Team;
-  previousHints: HintData[];
+  previousHints: PreviousHint[];
   currentHint?: HintData;
 }
 

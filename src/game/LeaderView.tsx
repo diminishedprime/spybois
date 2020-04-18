@@ -2,6 +2,7 @@ import * as React from "react";
 import {
   GameDataInProgress,
   Player,
+  Team,
   WithID,
   HintData,
   HintNumber,
@@ -15,21 +16,33 @@ interface Props {
   player: Player;
   gameData: WithID<GameDataInProgress>;
 }
+
+const defaultHint = (team: Team): HintData => ({
+  hint: "",
+  hintNumber: 1,
+  remainingGuesses: 1,
+  submitted: false,
+  team: team,
+});
+
 const LeaderView: React.FC<Props> = ({ gameData, player }) => {
   const leader = isLeader(gameData, player);
   const [localHint, setLocalHint] = React.useState<HintData>(() => {
     if (gameData.currentHint !== undefined) {
       return gameData.currentHint;
     } else {
-      return {
-        hint: "",
-        hintNumber: 1,
-        remainingGuesses: 1,
-        submitted: false,
-        team: gameData.currentTeam,
-      };
+      return defaultHint(gameData.currentTeam);
     }
   });
+
+  // When the game's current hint changes, we want to keep this up to date.
+  React.useEffect(() => {
+    // Re-default the local hint if the game's current hint is undefined. The
+    // game's current hint being undefined means somebody just goofed a guess.
+    if (gameData.currentHint === undefined) {
+      setLocalHint(defaultHint(gameData.currentTeam));
+    }
+  }, [gameData.currentHint]);
   const submit = React.useCallback(() => {
     if (localHint.hint === "") {
       return;
@@ -56,6 +69,8 @@ const LeaderView: React.FC<Props> = ({ gameData, player }) => {
       setLocalHint((current) => ({ ...current, team: gameData.currentTeam }));
     }
   }, [localHint.team, gameData.currentTeam]);
+
+  console.log("leaderView", { gameData });
 
   const bumpNum = React.useCallback(
     (direction: "up" | "down") => () => {
@@ -97,8 +112,6 @@ const LeaderView: React.FC<Props> = ({ gameData, player }) => {
   if (!leader) {
     return null;
   }
-
-  console.log({ localHint });
 
   return (
     <>

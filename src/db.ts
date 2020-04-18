@@ -134,11 +134,52 @@ export const flipCard = async (
   gameData: WithID<GameDataInProgress>,
   card: types.Card
 ): Promise<void> => {
-  const nuCards = gameData.cards.map((c) =>
-    c.id === card.id ? { ...c, flipped: true } : c
-  );
+  const currentTeam = gameData.currentTeam;
+  let correct = false;
+  const nuCards = gameData.cards.map((c) => {
+    if (c.id === card.id) {
+      if (card.team === currentTeam) {
+        correct = true;
+      }
+    }
+    return c.id === card.id ? { ...c, flipped: true } : c;
+  });
+  let nuCurrentTeam = gameData.currentTeam;
+  let nuCurrentHint: HintData | undefined | firebase.firestore.FieldValue =
+    gameData.currentHint;
+  let nuPreviousHints = gameData.previousHints;
+  if (nuCurrentHint !== undefined) {
+    // If the flipped card was correct, decrement the number of guesses.
+    if (correct) {
+      if (
+        nuCurrentHint.remainingGuesses === "infinity" ||
+        nuCurrentHint.remainingGuesses === "zero"
+      ) {
+        // Do nothing, they get to keep going.
+      } else {
+        // Decrement the reamining guesses by 1.
+        nuCurrentHint.remainingGuesses = nuCurrentHint.remainingGuesses - 1;
+      }
+    } else {
+    }
+    // If after updating the remaining guesses it's the value 0 (not 'zero'), or
+    // if they got the wrong card, it should be the next teams turn.
+    // TODO - Add special handling for assassin???
+    if (nuCurrentHint.remainingGuesses === 0 || !correct) {
+      nuPreviousHints.push({
+        team: nuCurrentHint.team,
+        hint: nuCurrentHint.hint,
+        hintNumber: nuCurrentHint.hintNumber,
+      });
+      nuCurrentHint = firebase.firestore.FieldValue.delete();
+      nuCurrentTeam = nuCurrentTeam === Team.Team1 ? Team.Team2 : Team.Team1;
+    }
+  }
   let update: Partial<UpdateGame> = {
     cards: nuCards,
+    currentHint: nuCurrentHint,
+    currentTeam: nuCurrentTeam,
+    previousHints: nuPreviousHints,
   };
   return await gameDoc(db, gameData.id).update(update);
 };
