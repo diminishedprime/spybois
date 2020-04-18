@@ -3,8 +3,8 @@ import ReactDOM from "react-dom";
 import { Override } from "./common";
 import * as serviceWorker from "./serviceWorker";
 import { Provider, useSelector } from "react-redux";
-import orange from "@material-ui/core/colors/orange";
-import purple from "@material-ui/core/colors/purple";
+import red from "@material-ui/core/colors/red";
+import blue from "@material-ui/core/colors/blue";
 import green from "@material-ui/core/colors/green";
 import { ThemeProvider } from "@material-ui/styles";
 import firebase from "firebase/app";
@@ -150,22 +150,26 @@ const Lobby: React.FC<{ uid: string }> = ({ uid }) => {
                 {nicks.length > 0 && (
                   <>
                     Game with{" "}
-                    {nicks.length === 1 && (
-                      <span className={classes.nick}>{nicks[0]}</span>
-                    )}
-                    {nicks.length > 1 &&
-                      nicks.map((nick, idx) => (
-                        <React.Fragment key={nick}>
-                          {nicks.length - 1 === idx
-                            ? " and "
-                            : nicks.length - 2 === idx && nicks.length !== 2
-                            ? ", "
-                            : ""}{" "}
-                          <span className={classes.nick} key={nick}>
+                    {nicks.reduce(
+                      (
+                        components: any[],
+                        nick: string,
+                        idx: number,
+                        array: any[]
+                      ) => {
+                        return components.concat([
+                          idx < array.length - 1
+                            ? idx === 0
+                              ? ""
+                              : ", "
+                            : " and ",
+                          <span key={nick} className={classes.nick}>
                             {nick}
-                          </span>
-                        </React.Fragment>
-                      ))}
+                          </span>,
+                        ]);
+                      },
+                      []
+                    )}
                   </>
                 )}
               </Typography>
@@ -316,8 +320,8 @@ const App = () => {
 
 const theme = createMuiTheme({
   palette: {
-    primary: orange,
-    secondary: purple,
+    primary: red,
+    secondary: blue,
     info: green,
   },
 });

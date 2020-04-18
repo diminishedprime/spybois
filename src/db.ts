@@ -343,6 +343,11 @@ export const subscribeToGamesWithPlayer = (
 ): (() => void) => {
   return gamesCollection(db)
     .where("playerIds", "array-contains", uid)
+    .where("gameState", "in", [
+      GameState.Init,
+      GameState.InProgress,
+      GameState.Ready,
+    ])
     .onSnapshot((data) => {
       // TODO - there should actually be some checks on the shape of the data.
       const games = data.docs.map((doc) => ({
