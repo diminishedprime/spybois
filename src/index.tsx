@@ -65,13 +65,16 @@ const CreateGame: React.FC<{ uid: string }> = ({ uid }) => {
   const history = useHistory();
   const [nick, setNick] = React.useState("");
   const override = useSelector((s: State) => s.override);
-  const debugNewGame = React.useCallback(() => {
-    gamesCollection(db)
-      .add(newFullGame(uid, nick))
-      .then((nuGame) => {
-        history.push(`/games/${nuGame.id}`);
-      });
-  }, [uid, nick, history]);
+  const debugNewGame = React.useCallback(
+    (asLeader: boolean) => () => {
+      gamesCollection(db)
+        .add(newFullGame(uid, nick, asLeader))
+        .then((nuGame) => {
+          history.push(`/games/${nuGame.id}`);
+        });
+    },
+    [uid, nick, history]
+  );
 
   const newGame = React.useCallback(() => {
     gamesCollection(db)
@@ -93,7 +96,26 @@ const CreateGame: React.FC<{ uid: string }> = ({ uid }) => {
       >
         New Game
       </Button>
-      {override && <Button onClick={debugNewGame}>Debug New Game</Button>}
+      {override && (
+        <Button
+          variant="contained"
+          className={classes.newGame}
+          color="secondary"
+          onClick={debugNewGame(true)}
+        >
+          As Leader
+        </Button>
+      )}
+      {override && (
+        <Button
+          variant="contained"
+          className={classes.newGame}
+          color="secondary"
+          onClick={debugNewGame(false)}
+        >
+          As Team
+        </Button>
+      )}
     </section>
   );
 };

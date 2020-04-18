@@ -21,7 +21,7 @@ export const isLeader = (
 export const newFullGame = (
   uid: string,
   nick: string,
-  amGuesser = true
+  asLeader: boolean
 ): GameData => {
   return {
     nickMap: {
@@ -33,8 +33,8 @@ export const newFullGame = (
     },
     playerIds: [uid, "a", "b", "c", "d"],
     gameState: types.GameState.Init,
-    team1AgentIds: ["a", amGuesser ? uid : "b"],
-    team1LeaderId: amGuesser ? "b" : uid,
+    team1AgentIds: ["a", asLeader ? "b" : uid],
+    team1LeaderId: asLeader ? uid : "b",
     team2AgentIds: ["c"],
     team2LeaderId: "d",
   };
