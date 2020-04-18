@@ -33,8 +33,8 @@ export const newFullGame = (
     },
     playerIds: [uid, "a", "b", "c", "d"],
     gameState: types.GameState.Init,
-    team1AgentIds: ["a"],
-    team1LeaderId: amGuesser ? uid : "b",
+    team1AgentIds: ["a", amGuesser ? uid : "b"],
+    team1LeaderId: amGuesser ? "b" : uid,
     team2AgentIds: ["c"],
     team2LeaderId: "d",
   };
