@@ -78,6 +78,7 @@ export interface GameDataInProgress extends BaseGameData, Teams {
   cards: Card[];
   currentTeam: Team;
   previousHints: PreviousHint[];
+  flippedCards: Card[];
   currentHint?: HintData;
 }
 
@@ -87,6 +88,7 @@ export interface GameDataGameOver extends BaseGameData, Teams {
   cards: Card[];
   currentTeam: Team;
   previousHints: PreviousHint[];
+  flippedCards: Card[];
   currentHint?: HintData;
 }
 

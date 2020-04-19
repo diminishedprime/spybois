@@ -71,6 +71,7 @@ const card4 = {
 };
 const inProgressGame = (): GameDataInProgress => {
   return {
+    flippedCards: [],
     gameState: GameState.InProgress,
     playerIds: [a.id, b.id, c.id, d.id],
     nickMap: { [a.id]: "Ayyy", [b.id]: "Beee", [c.id]: "Ceee", [d.id]: "Deee" },
@@ -146,5 +147,30 @@ describe("for the db", () => {
 
     expect(gameAfterSecondFlip.currentHint).toBeUndefined();
     expect(gameAfterSecondFlip.currentTeam).toBe(Team.Team2);
+  });
+
+  test("flipping a card adds it to the history of flipped cards", async () => {
+    const app = authedApp({ uid: c.id });
+    const gameWithHint = withHint(inProgressGame(), {
+      team: Team.Team1,
+      hintNumber: "infinity",
+      submitted: true,
+      remainingGuesses: "infinity",
+      hint: "Good hint",
+    });
+    // Add this game to the database.
+    const doc = await sut.gamesCollection(app).add(gameWithHint);
+    const withId: WithID<GameDataInProgress> = { ...gameWithHint, id: doc.id };
+
+    // Flip the first card.
+    await sut.flipCard(app, withId, card1, firebase);
+
+    const gameAfterFlip = (
+      await sut.gameDoc(app, doc.id).get()
+    ).data() as GameData;
+    if (gameAfterFlip.gameState !== GameState.InProgress) {
+      fail("The game state should still be in progress after this flip");
+    }
+    expect(gameAfterFlip.flippedCards).toEqual([{ ...card1, flipped: true }]);
   });
 });

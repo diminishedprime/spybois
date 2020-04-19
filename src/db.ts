@@ -191,17 +191,21 @@ export const flipCard = async (
   gameData: WithID<GameDataInProgress>,
   card: types.Card,
   // I can't figure out how to type this.
-  fb = firebase
+  fb: any = firebase
 ): Promise<void> => {
   const currentTeam = gameData.currentTeam;
   let correct = false;
+  const nuFlippedCards = gameData.flippedCards;
   const nuCards = gameData.cards.map((c) => {
     if (c.id === card.id) {
       if (card.team === currentTeam) {
         correct = true;
       }
+      const nuCard = { ...c, flipped: true };
+      nuFlippedCards.push(nuCard);
+      return nuCard;
     }
-    return c.id === card.id ? { ...c, flipped: true } : c;
+    return c;
   });
 
   let nuCurrentTeam = gameData.currentTeam;
@@ -255,11 +259,12 @@ export const flipCard = async (
       : Team.Team2;
     const update: UpdateGame<Pick<
       GameDataGameOver,
-      "winner" | "previousHints" | "gameState"
+      "winner" | "previousHints" | "gameState" | "flippedCards"
     >> = {
       gameState: GameState.GameOver,
       winner,
       previousHints: nuPreviousHints,
+      flippedCards: nuFlippedCards,
     };
     return await gameDoc(db, gameData.id).update(update);
   } else {
@@ -268,6 +273,7 @@ export const flipCard = async (
       currentHint: nuCurrentHint,
       currentTeam: nuCurrentTeam,
       previousHints: nuPreviousHints,
+      flippedCards: nuFlippedCards,
     };
     return await gameDoc(db, gameData.id).update(update);
   }

@@ -39,6 +39,7 @@ export const addWordsToGame = functions.firestore
           cards,
           currentTeam,
           previousHints: [],
+          flippedCards: [],
         });
       }
   });
