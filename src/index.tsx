@@ -175,6 +175,9 @@ const Lobby: React.FC<{ uid: string }> = ({ uid }) => {
           );
         })}
       </section>
+      <section className={classes.signOut}>
+        <SignOut />
+      </section>
     </>
   );
 };
@@ -193,6 +196,8 @@ const SignIn: React.FC = () => {
         // redirect to home page after login
         if (afterLogin !== null) {
           history.push(afterLogin);
+        } else {
+          history.push("/");
         }
       })
       .catch((e) => {
@@ -226,6 +231,10 @@ const SignOut = () => {
 };
 
 const useStyles = makeStyles((theme) => ({
+  signOut: {
+    margin: theme.spacing(5),
+    display: "flex",
+  },
   root: {
     margin: "0 auto",
     padding: theme.spacing(1),
@@ -304,14 +313,6 @@ const App = () => {
           </Route>
         </Switch>
       </div>
-
-      {/* TODO - I need to figure out if I want to support these functions or not. */}
-      {false && (
-        <>
-          {user !== undefined && <SignOut />}
-          <Link to="/">Home</Link>
-        </>
-      )}
     </div>
   );
 };
