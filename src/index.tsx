@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import { Override, JoinNicks } from "./common";
 import * as serviceWorker from "./serviceWorker";
+import CssBaseline from "@material-ui/core/CssBaseline";
 import { Provider, useSelector } from "react-redux";
 import red from "@material-ui/core/colors/red";
 import blue from "@material-ui/core/colors/blue";
@@ -232,7 +233,6 @@ const useStyles = makeStyles((theme) => ({
   },
   heading: {
     textAlign: "center",
-    fontFamily: "cursive",
     marginBottom: theme.spacing(2),
   },
   gameCards: {
@@ -317,6 +317,9 @@ const App = () => {
 };
 
 const theme = createMuiTheme({
+  typography: {
+    fontFamily: ["'Baloo Bhaina 2'", "cursive"].join(","),
+  },
   palette: {
     primary: red,
     secondary: blue,
@@ -328,6 +331,7 @@ ReactDOM.render(
   <React.StrictMode>
     <Provider<Actions> store={store}>
       <ThemeProvider theme={theme}>
+        <CssBaseline />
         <Router>
           <App />
         </Router>
