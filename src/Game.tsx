@@ -1,6 +1,7 @@
 import React from "react";
 import Badge from "@material-ui/core/Badge";
 import { useSelector } from "react-redux";
+import { JoinNicks } from "./common";
 import { useParams, useHistory } from "react-router-dom";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
@@ -18,13 +19,13 @@ import {
   gameReady,
   startGame,
   flipCard,
+  resetGame,
 } from "./db";
 import { db } from "./index";
 import * as types from "./types";
 import {
   State,
   Player,
-  NPC,
   WithID,
   GameData,
   GameState,
@@ -460,7 +461,6 @@ interface GameProps {
 }
 
 const Game: React.FC<GameProps> = ({ player }) => {
-  const classes = useTeamTextColor();
   const history = useHistory();
   const { gameUid } = useParams<GameParams>();
   const [gameData, setGameData] = React.useState<WithID<GameData>>();
@@ -475,7 +475,15 @@ const Game: React.FC<GameProps> = ({ player }) => {
     });
   }, [gameUid, history]);
 
-  // TODO - default to spectator view;
+  const reset = React.useCallback(() => {
+    if (gameData === undefined) {
+      return;
+    }
+    if (gameData.gameState !== GameState.GameOver) {
+      return;
+    }
+    resetGame(db, gameData);
+  }, [gameData]);
 
   if (gameData === undefined) {
     return null;
@@ -513,28 +521,23 @@ const Game: React.FC<GameProps> = ({ player }) => {
       <>
         <Typography variant="h2">Game Over!</Typography>
         <Typography variant="h5">
-          <span className={classes[gameData.winner]}>{gameData.winner}</span>{" "}
-          won .
+          <JoinNicks
+            nicks={
+              gameData.winner === Team.Team1
+                ? [gameData.team1LeaderId, ...gameData.team1AgentIds]
+                : [gameData.team2LeaderId, ...gameData.team2AgentIds]
+            }
+            team={gameData.winner}
+          />{" "}
+          won!
         </Typography>
+        <Button onClick={reset}>New Game With Same Players</Button>
         <Link to={"/"}>Back To Lobby</Link>
-        Hi Andrew
-        <Typography variant="body1">
-          TODO - Add in a way to start a new game with everybody from here. It
-          should default to people being on the same team.
-        </Typography>
         <Board gameData={gameData as any} player={player} />
       </>
     );
   }
-
-  return (
-    <>
-      <div>Game: {gameUid}</div>
-      <JoinGame gameData={gameData} player={player} />
-      <br />
-      {gameData && JSON.stringify(gameData)}
-    </>
-  );
+  return null;
 };
 
 export default Game;

@@ -103,6 +103,31 @@ export const joinGame = async (
   return await gameDoc(db, gameData.id).update(update);
 };
 
+export const resetGame = async (
+  db: firebase.firestore.Firestore,
+  gameData: WithID<GameDataGameOver>
+): Promise<void> => {
+  let update: UpdateGame<Omit<
+    GameDataGameOver & GameDataInProgress,
+    // We exclude the values that should remain the same in between games.
+    | "team1LeaderId"
+    | "team1AgentIds"
+    | "team2LeaderId"
+    | "team2AgentIds"
+    | "playerIds"
+    | "nickMap"
+  >> = {
+    gameState: GameState.Init as any,
+    winner: firebase.firestore.FieldValue.delete(),
+    cards: firebase.firestore.FieldValue.delete(),
+    currentTeam: firebase.firestore.FieldValue.delete(),
+    currentHint: firebase.firestore.FieldValue.delete(),
+    previousHints: firebase.firestore.FieldValue.delete(),
+    flippedCards: firebase.firestore.FieldValue.delete(),
+  };
+  return await gameDoc(db, gameData.id).update(update);
+};
+
 export const unJoinTeam = async (
   db: Firestore,
   gameData: WithID<GameDataInit>,
