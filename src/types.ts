@@ -58,6 +58,14 @@ export interface Card {
   team: Team | NPC;
 }
 
+export interface FlippedCard {
+  id: string;
+  value: string;
+  flipped: true;
+  team: Team | NPC;
+  teamThatFlipped: Team;
+}
+
 export type HintNumber = number | "zero" | "infinity";
 
 export interface HintData {
@@ -78,7 +86,7 @@ export interface GameDataInProgress extends BaseGameData, Teams {
   cards: Card[];
   currentTeam: Team;
   previousHints: PreviousHint[];
-  flippedCards: Card[];
+  flippedCards: FlippedCard[];
   currentHint?: HintData;
 }
 
@@ -88,7 +96,7 @@ export interface GameDataGameOver extends BaseGameData, Teams {
   cards: Card[];
   currentTeam: Team;
   previousHints: PreviousHint[];
-  flippedCards: Card[];
+  flippedCards: FlippedCard[];
   currentHint?: HintData;
 }
 

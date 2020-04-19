@@ -1,4 +1,5 @@
 import React from "react";
+import Badge from "@material-ui/core/Badge";
 import { useSelector } from "react-redux";
 import { useParams, useHistory } from "react-router-dom";
 import Button from "@material-ui/core/Button";
@@ -23,6 +24,7 @@ import * as types from "./types";
 import {
   State,
   Player,
+  NPC,
   WithID,
   GameData,
   GameState,
@@ -38,6 +40,12 @@ import PlayerView from "./game/PlayerView";
 import { Override } from "./common";
 
 export const useTeamTextColor = makeStyles((theme) => ({
+  previousHints: {
+    display: "flex",
+  },
+  previousHint: {
+    margin: theme.spacing(0, 1),
+  },
   playerViewContainer: {
     margin: theme.spacing(1, 10),
     display: "flex",
@@ -94,10 +102,13 @@ export const useStyles = makeStyles((theme) => ({
     justifyContent: "center",
     flexWrap: "wrap",
   },
-  card: {
-    padding: theme.spacing(1),
+  badge: {
     width: "15%",
     margin: theme.spacing(1),
+    "& span": {},
+  },
+  card: {
+    width: "100%",
     textAlign: "center",
     "& :hover": {
       color: theme.palette.common.black,
@@ -305,6 +316,29 @@ interface BoardProps {
   player: Player;
 }
 
+interface PreviousHintsProps {
+  gameData: types.GameDataGameOver | types.GameDataInProgress;
+}
+
+const PreviousHints: React.FC<PreviousHintsProps> = ({ gameData }) => {
+  const classes = useTeamTextColor();
+  const previousHints = gameData.previousHints;
+  return (
+    <section className={classes.previousHints}>
+      {previousHints.map((hint) => (
+        <span className={classes.previousHint}>
+          <span className={classes[hint.team]}>{hint.hint}</span>,{" "}
+          {hint.hintNumber === "zero"
+            ? "0"
+            : hint.hintNumber === "infinity"
+            ? "∞"
+            : hint.hintNumber}
+        </span>
+      ))}
+    </section>
+  );
+};
+
 const Board: React.FC<BoardProps> = ({ gameData, player }) => {
   const classes = useStyles();
   const isTeam1Leader = gameData.team1LeaderId === player.id;
@@ -343,29 +377,43 @@ const Board: React.FC<BoardProps> = ({ gameData, player }) => {
               gameData.gameState === GameState.GameOver,
             [classes.flipped]: card.flipped,
           });
+          const flipOrder = gameData.flippedCards.findIndex(
+            (c) => c.id === card.id
+          );
+          const flipTeam =
+            flipOrder !== -1 &&
+            gameData.flippedCards[flipOrder].teamThatFlipped;
+          const color = flipTeam === Team.Team1 ? "primary" : "secondary";
+          console.log({ color, flipTeam, flipOrder }, gameData.flippedCards);
           return (
-            <Button
-              className={className}
-              variant="outlined"
-              key={card.id}
-              onClick={() => {
-                // If the hint isn't submitted, we shouldn't let the other team guess.
-                if (!hintSubmitted && !adminOverride) {
-                  return;
-                }
-                // Leaders can't flip cards. That'd be op.
-                if (isLeader && !adminOverride) {
-                  return;
-                }
-                if (popupVisible) {
-                  return;
-                }
-                setPopupVisible(true);
-                setSelectedCard(card);
-              }}
+            <Badge
+              className={classes.badge}
+              badgeContent={flipOrder === -1 ? null : flipOrder + 1}
+              color={color}
             >
-              {card.value}
-            </Button>
+              <Button
+                className={className}
+                variant="outlined"
+                key={card.id}
+                onClick={() => {
+                  // If the hint isn't submitted, we shouldn't let the other team guess.
+                  if (!hintSubmitted && !adminOverride) {
+                    return;
+                  }
+                  // Leaders can't flip cards. That'd be op.
+                  if (isLeader && !adminOverride) {
+                    return;
+                  }
+                  if (popupVisible) {
+                    return;
+                  }
+                  setPopupVisible(true);
+                  setSelectedCard(card);
+                }}
+              >
+                {card.value}
+              </Button>
+            </Badge>
           );
         })}
       </div>
@@ -454,6 +502,7 @@ const Game: React.FC<GameProps> = ({ player }) => {
         <PlayerView gameData={gameData} player={player} />
         <Override />
         <Board gameData={gameData} player={player} />
+        <PreviousHints gameData={gameData} />
       </>
     );
   }

@@ -171,6 +171,8 @@ describe("for the db", () => {
     if (gameAfterFlip.gameState !== GameState.InProgress) {
       fail("The game state should still be in progress after this flip");
     }
-    expect(gameAfterFlip.flippedCards).toEqual([{ ...card1, flipped: true }]);
+    expect(gameAfterFlip.flippedCards).toEqual([
+      { ...card1, flipped: true, teamThatFlipped: Team.Team1 },
+    ]);
   });
 });

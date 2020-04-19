@@ -201,7 +201,11 @@ export const flipCard = async (
       if (card.team === currentTeam) {
         correct = true;
       }
-      const nuCard = { ...c, flipped: true };
+      const nuCard: types.FlippedCard = {
+        ...c,
+        flipped: true,
+        teamThatFlipped: currentTeam,
+      };
       nuFlippedCards.push(nuCard);
       return nuCard;
     }
