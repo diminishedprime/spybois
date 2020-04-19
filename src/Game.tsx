@@ -370,9 +370,9 @@ const Board: React.FC<BoardProps> = ({ gameData, player }) => {
             flipOrder !== -1 &&
             gameData.flippedCards[flipOrder].teamThatFlipped;
           const color = flipTeam === Team.Team1 ? "primary" : "secondary";
-          console.log({ color, flipTeam, flipOrder }, gameData.flippedCards);
           return (
             <Badge
+              key={card.id}
               className={classes.badge}
               badgeContent={flipOrder === -1 ? null : flipOrder + 1}
               color={color}
@@ -380,7 +380,6 @@ const Board: React.FC<BoardProps> = ({ gameData, player }) => {
               <Button
                 className={className}
                 variant="outlined"
-                key={card.id}
                 onClick={() => {
                   // If the hint isn't submitted, we shouldn't let the other team guess.
                   if (!hintSubmitted && !adminOverride) {
