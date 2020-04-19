@@ -35,7 +35,7 @@ export interface BaseGameData {
   nickMap: { [id: string]: string };
 }
 
-interface Teams {
+export interface Teams {
   team1LeaderId: string;
   team1AgentIds: string[];
 

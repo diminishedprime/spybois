@@ -37,7 +37,7 @@ const CopyGameToClipboard: React.FC<Props> = () => {
         >
           <Button
             variant="contained"
-            color="secondary"
+            color="default"
             startIcon={<FileCopyIcon />}
           >
             Copy link to game

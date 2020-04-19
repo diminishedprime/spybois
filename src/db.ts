@@ -4,6 +4,7 @@ import * as types from "./types";
 import {
   GameData,
   GameState,
+  Teams,
   GameDataInit,
   Player,
   GameDataGameOver,
@@ -24,7 +25,7 @@ export const isLeader = (
 };
 
 export const onSpecificTeam = (
-  gameData: GameDataInProgress,
+  gameData: GameDataInProgress | GameDataInit,
   player: Player,
   team: Team
 ): boolean => {
@@ -339,37 +340,59 @@ export const joinTeam = async (
   team: Team,
   role: Role
 ): Promise<void> => {
-  // If the player is already on a team, don't do anything.
-  if (onTeam(gameData, player)) {
-    console.info("Already on team", { gameData, player, team, role });
-    return;
+  let update: UpdateGame<Partial<Teams>> = {};
+  let removeFromCurrent = false;
+
+  if (role === Role.Leader) {
+    if (team === Team.Team1 && gameData.team1LeaderId === undefined) {
+      update.team1LeaderId = player.id;
+      removeFromCurrent = true;
+    }
+    if (team === Team.Team2 && gameData.team2LeaderId === undefined) {
+      update.team2LeaderId = player.id;
+      removeFromCurrent = true;
+    }
+  } else if (role === Role.Agent) {
+    if (team === Team.Team1) {
+      update.team1AgentIds = firebase.firestore.FieldValue.arrayUnion(
+        player.id
+      );
+      removeFromCurrent = true;
+    }
+    if (team === Team.Team2) {
+      update.team2AgentIds = firebase.firestore.FieldValue.arrayUnion(
+        player.id
+      );
+      removeFromCurrent = true;
+    }
   }
-  let updateObject: Partial<UpdateGame> = {};
-  if (
-    team === Team.Team1 &&
-    role === Role.Leader &&
-    gameData.team1LeaderId === undefined
-  ) {
-    updateObject.team1LeaderId = player.id;
+
+  if (removeFromCurrent === true) {
+    if (player.id === gameData.team1LeaderId) {
+      update.team1LeaderId = firebase.firestore.FieldValue.delete();
+    }
+    if (player.id === gameData.team2LeaderId) {
+      update.team2LeaderId = firebase.firestore.FieldValue.delete();
+    }
+    if (
+      gameData.team1AgentIds !== undefined &&
+      gameData.team1AgentIds.includes(player.id)
+    ) {
+      update.team1AgentIds = firebase.firestore.FieldValue.arrayRemove(
+        player.id
+      );
+    }
+    if (
+      gameData.team2AgentIds !== undefined &&
+      gameData.team2AgentIds.includes(player.id)
+    ) {
+      update.team2AgentIds = firebase.firestore.FieldValue.arrayRemove(
+        player.id
+      );
+    }
   }
-  if (team === Team.Team1 && role === Role.Agent) {
-    updateObject.team1AgentIds = firebase.firestore.FieldValue.arrayUnion(
-      player.id
-    );
-  }
-  if (
-    team === Team.Team2 &&
-    role === Role.Leader &&
-    gameData.team2LeaderId === undefined
-  ) {
-    updateObject.team2LeaderId = player.id;
-  }
-  if (team === Team.Team2 && role === Role.Agent) {
-    updateObject.team2AgentIds = firebase.firestore.FieldValue.arrayUnion(
-      player.id
-    );
-  }
-  return await gameDoc(db, gameData.id).update(updateObject);
+
+  return await gameDoc(db, gameData.id).update(update);
 };
 
 export const deleteOldFinishedGames = async (db: Firestore, uid: string) => {

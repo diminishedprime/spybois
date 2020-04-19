@@ -14,7 +14,7 @@ import {
   subcribeToGameChanges,
   joinGame,
   joinTeam,
-  unJoinTeam,
+  onSpecificTeam,
   onTeam,
   gameReady,
   startGame,
@@ -187,10 +187,6 @@ const JoinTeam: React.FC<JoinTeamProps> = ({ player, gameData }) => {
     [player, gameData]
   );
 
-  const unJoin = React.useCallback(() => {
-    unJoinTeam(db, gameData, player);
-  }, [player, gameData]);
-
   const start = React.useCallback(() => {
     startGame(db, gameData);
   }, [gameData]);
@@ -204,12 +200,6 @@ const JoinTeam: React.FC<JoinTeamProps> = ({ player, gameData }) => {
     return (
       <section className={classes.teamGroup}>
         <Button
-          disabled={
-            onTeam(gameData, player) ||
-            (team === Team.Team1
-              ? gameData.team1LeaderId
-              : gameData.team2LeaderId) !== undefined
-          }
           color={color}
           variant="contained"
           onClick={join(team, Role.Leader)}
@@ -223,7 +213,6 @@ const JoinTeam: React.FC<JoinTeamProps> = ({ player, gameData }) => {
           {leaderId && gameData.nickMap[leaderId]}
         </Typography>
         <Button
-          disabled={onTeam(gameData, player)}
           color={color}
           variant="outlined"
           onClick={join(team, Role.Agent)}
@@ -258,18 +247,14 @@ const JoinTeam: React.FC<JoinTeamProps> = ({ player, gameData }) => {
         <Button
           disabled={!gameReady(gameData) || !onTeam(gameData, player)}
           variant="contained"
-          color="default"
+          color={
+            onSpecificTeam(gameData, player, Team.Team1)
+              ? "primary"
+              : "secondary"
+          }
           onClick={start}
         >
           Start Game
-        </Button>
-        <Button
-          disabled={!onTeam(gameData, player)}
-          variant="contained"
-          color="default"
-          onClick={unJoin}
-        >
-          Leave Role
         </Button>
       </section>
     </section>
