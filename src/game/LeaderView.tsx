@@ -9,7 +9,7 @@ import {
   HintNumber,
 } from "../types";
 import { JoinNicks } from "../common";
-import { isLeader, submitHint } from "../db";
+import { isLeader, submitHint, isYourTurn } from "../db";
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
 import { db } from "../index";
@@ -32,6 +32,7 @@ const defaultHint = (team: Team): HintData => ({
 const LeaderView: React.FC<Props> = ({ gameData, player }) => {
   const classes = useStyles();
   const override = useSelector((s: State) => s.override);
+  const yourTurn = isYourTurn(gameData, player);
   const currentTeamNicks = (gameData.currentTeam === Team.Team1
     ? gameData.team1AgentIds
     : gameData.team2AgentIds
@@ -129,12 +130,14 @@ const LeaderView: React.FC<Props> = ({ gameData, player }) => {
     <section className={classes.leaderViewContainer}>
       <TextField
         value={localHint?.hint || ""}
-        disabled={localHint.submitted}
+        disabled={localHint.submitted || !yourTurn}
         label="Enter hint"
         onChange={(e) => setLocalHint({ ...localHint, hint: e.target.value })}
       />
       <Button
-        disabled={localHint.hintNumber === "zero" || localHint.submitted}
+        disabled={
+          localHint.hintNumber === "zero" || localHint.submitted || !yourTurn
+        }
         variant="outlined"
         color={gameData.currentTeam === Team.Team1 ? "primary" : "secondary"}
         onClick={bumpNum("down")}
@@ -151,13 +154,17 @@ const LeaderView: React.FC<Props> = ({ gameData, player }) => {
       <Button
         color={gameData.currentTeam === Team.Team1 ? "primary" : "secondary"}
         variant="outlined"
-        disabled={localHint.hintNumber === "infinity" || localHint.submitted}
+        disabled={
+          localHint.hintNumber === "infinity" ||
+          localHint.submitted ||
+          !yourTurn
+        }
         onClick={bumpNum("up")}
       >
         +
       </Button>
       <Button
-        disabled={localHint.submitted || localHint.hint === ""}
+        disabled={localHint.submitted || localHint.hint === "" || !yourTurn}
         color={gameData.currentTeam === Team.Team1 ? "primary" : "secondary"}
         variant="contained"
         onClick={submit}
