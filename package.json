@@ -36,7 +36,8 @@
     "eject": "react-scripts eject",
     "deploy:rules": "firebase deploy --only firestore:rules",
     "deploy:functions": "cd functions && npm run deploy",
-    "deploy:all": "npm run deploy:rules && npm run deploy:functions"
+    "deploy:app": "yarn build && firebase deploy --only hosting",
+    "deploy:all": "npm run deploy:rules && npm run deploy:functions && npm run deploy:app"
   },
   "eslintConfig": {
     "extends": "react-app"
