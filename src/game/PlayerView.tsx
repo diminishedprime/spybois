@@ -1,6 +1,6 @@
 import * as React from "react";
 import Button from "@material-ui/core/Button";
-import { GameDataInProgress, Player, WithID, Team } from "../types";
+import { GameDataInProgress, Player, WithID, Team, State } from "../types";
 import Typography from "@material-ui/core/Typography";
 import { useTeamTextColor } from "../Game";
 import classnames from "classnames";
@@ -10,6 +10,7 @@ import DialogActions from "@material-ui/core/DialogActions";
 import { passTurn, isPlayer, isYourTurn } from "../db";
 import { db } from "../index";
 import { JoinNicks } from "../common";
+import { useSelector } from "react-redux";
 
 interface Props {
   player: Player;
@@ -18,9 +19,16 @@ interface Props {
 const PlayerView: React.FC<Props> = ({ gameData, player }) => {
   const classes = useTeamTextColor();
   const [showConfirmDialog, setShowConfimDialog] = React.useState(false);
-  // TODO - Add in logic to the currentHint that indicates if a guess has
-  // happened or not.
-  const canPass = isPlayer(gameData, player) && isYourTurn(gameData, player);
+  const override = useSelector((s: State) => s.override);
+  const canPass =
+    override ||
+    (isPlayer(gameData, player) &&
+      isYourTurn(gameData, player) &&
+      // There has been at least one flipped card
+      gameData.flippedCards.length > 0 &&
+      // And the last flipped card in the game data is for the current team.
+      gameData.flippedCards[gameData.flippedCards.length - 1].team ===
+        gameData.currentTeam);
 
   const pass = React.useCallback(() => {
     passTurn(db, gameData).then(() => {

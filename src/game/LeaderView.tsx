@@ -31,8 +31,8 @@ const defaultHint = (team: Team): HintData => ({
 const LeaderView: React.FC<Props> = ({ gameData, player }) => {
   const classes = useStyles();
   const override = useSelector((s: State) => s.override);
-  const yourTurn = isYourTurn(gameData, player);
-  const leader = isLeader(gameData, player);
+  const yourTurn = isYourTurn(gameData, player) || override;
+  const leader = isLeader(gameData, player) || override;
   const [localHint, setLocalHint] = React.useState<HintData>(() => {
     if (gameData.currentHint !== undefined) {
       return gameData.currentHint;
@@ -113,7 +113,7 @@ const LeaderView: React.FC<Props> = ({ gameData, player }) => {
     []
   );
 
-  if (!leader && !override) {
+  if (!leader) {
     return null;
   }
 
