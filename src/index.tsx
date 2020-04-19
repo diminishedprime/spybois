@@ -16,7 +16,6 @@ import {
   Route,
   useHistory,
   Link,
-  useParams,
   useLocation,
 } from "react-router-dom";
 import Game from "./Game";
@@ -133,7 +132,7 @@ const Lobby: React.FC<{ uid: string }> = ({ uid }) => {
 
   React.useEffect(() => {
     deleteOldFinishedGames(db, uid);
-  }, []);
+  }, [uid]);
 
   React.useEffect(() => {
     return subscribeToGamesWithPlayer(db, uid, setGames);
@@ -218,7 +217,7 @@ const SignIn: React.FC = () => {
       .catch((e) => {
         // TODO - handle login error.
       });
-  }, []);
+  }, [afterLogin, history]);
   return (
     <>
       <Typography variant="h4" className={classes.heading}>
