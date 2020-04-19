@@ -5,6 +5,8 @@ import { State, Actions, ActionType } from "./types";
 import { useSelector, useDispatch } from "react-redux";
 import Checkbox from "@material-ui/core/Checkbox";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
+import { useTeamTextColor } from "./Game";
+import { Team } from "./types";
 
 interface NickNameProps {
   onChange?: (nick: string) => void;
@@ -47,7 +49,6 @@ export const Override: React.FC = () => {
     [dispatch]
   );
   // Remove this if you want to set admin override.
-  return <></>;
   return (
     <FormControlLabel
       control={
@@ -58,5 +59,33 @@ export const Override: React.FC = () => {
       }
       label="Admin Override"
     />
+  );
+};
+
+export const JoinNicks: React.FC<{ nicks: string[]; team: Team }> = ({
+  nicks,
+  team,
+}) => {
+  const classes = useTeamTextColor();
+  return (
+    <>
+      {nicks.reduce(
+        (components: any[], nick: string, idx: number, array: any[]) => {
+          return components.concat([
+            array.length === 1
+              ? ""
+              : idx < array.length - 1
+              ? idx === 0
+                ? ""
+                : ", "
+              : " and ",
+            <span key={nick} className={classes[team]}>
+              {nick}
+            </span>,
+          ]);
+        },
+        []
+      )}
+    </>
   );
 };

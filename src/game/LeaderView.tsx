@@ -8,6 +8,7 @@ import {
   HintData,
   HintNumber,
 } from "../types";
+import { JoinNicks } from "../common";
 import { isLeader, submitHint } from "../db";
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
@@ -31,7 +32,10 @@ const defaultHint = (team: Team): HintData => ({
 const LeaderView: React.FC<Props> = ({ gameData, player }) => {
   const classes = useStyles();
   const override = useSelector((s: State) => s.override);
-  const teamTextColor = useTeamTextColor();
+  const currentTeamNicks = (gameData.currentTeam === Team.Team1
+    ? gameData.team1AgentIds
+    : gameData.team2AgentIds
+  ).map((id) => gameData.nickMap[id]);
   const leader = isLeader(gameData, player);
   const [localHint, setLocalHint] = React.useState<HintData>(() => {
     if (gameData.currentHint !== undefined) {
@@ -118,13 +122,7 @@ const LeaderView: React.FC<Props> = ({ gameData, player }) => {
   }
 
   if (gameData.currentHint !== undefined) {
-    return (
-      <section className={classes.leaderViewContainer}>
-        Waiting on{" "}
-        <span className={teamTextColor[gameData.currentTeam]}>agents</span> to
-        guess.
-      </section>
-    );
+    return null;
   }
 
   return (
@@ -132,16 +130,27 @@ const LeaderView: React.FC<Props> = ({ gameData, player }) => {
       <TextField
         value={localHint?.hint || ""}
         disabled={localHint.submitted}
+        label="Enter hint"
         onChange={(e) => setLocalHint({ ...localHint, hint: e.target.value })}
       />
       <Button
         disabled={localHint.hintNumber === "zero" || localHint.submitted}
+        variant="outlined"
+        color={gameData.currentTeam === Team.Team1 ? "primary" : "secondary"}
         onClick={bumpNum("down")}
       >
         -
       </Button>
-      {localHint.hintNumber}
+      <span>
+        {localHint.hintNumber === "infinity"
+          ? "∞"
+          : localHint.hintNumber === "zero"
+          ? 0
+          : localHint.hintNumber}
+      </span>
       <Button
+        color={gameData.currentTeam === Team.Team1 ? "primary" : "secondary"}
+        variant="outlined"
         disabled={localHint.hintNumber === "infinity" || localHint.submitted}
         onClick={bumpNum("up")}
       >
@@ -149,6 +158,8 @@ const LeaderView: React.FC<Props> = ({ gameData, player }) => {
       </Button>
       <Button
         disabled={localHint.submitted || localHint.hint === ""}
+        color={gameData.currentTeam === Team.Team1 ? "primary" : "secondary"}
+        variant="contained"
         onClick={submit}
       >
         Submit Hint

@@ -43,15 +43,16 @@ export const useTeamTextColor = makeStyles((theme) => ({
     display: "flex",
     width: "80vw",
     justifyContent: "space-around",
+    alignItems: "baseline",
   },
   guessContainer: {
     display: "flex",
     flexGrow: 1,
     alignItems: "baseline",
     justifyContent: "center",
-    "& span": {
-      margin: theme.spacing(0, 1),
-    },
+  },
+  spaceSpan: {
+    margin: theme.spacing(0, 1),
   },
   [types.Team.Team1]: {
     color: theme.palette.primary.main,
@@ -68,6 +69,15 @@ export const useTeamTextColor = makeStyles((theme) => ({
 export const useStyles = makeStyles((theme) => ({
   leaderViewContainer: {
     margin: theme.spacing(0),
+    display: "flex",
+    alignItems: "baseline",
+    "& button": {
+      margin: theme.spacing(1),
+    },
+    "& span": {
+      minWidth: theme.spacing(2),
+      textAlign: "center",
+    },
   },
   startLeaveButtons: {
     display: "flex",

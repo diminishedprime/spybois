@@ -9,6 +9,7 @@ import DialogTitle from "@material-ui/core/DialogTitle";
 import DialogActions from "@material-ui/core/DialogActions";
 import { passTurn, isPlayer, isYourTurn } from "../db";
 import { db } from "../index";
+import { JoinNicks } from "../common";
 
 interface Props {
   player: Player;
@@ -27,13 +28,26 @@ const PlayerView: React.FC<Props> = ({ gameData, player }) => {
     });
   }, [gameData]);
 
+  const currentTeamNicks = (gameData.currentTeam === Team.Team1
+    ? gameData.team1AgentIds
+    : gameData.team2AgentIds
+  ).map((id) => gameData.nickMap[id]);
+
   if (gameData.currentHint === undefined || !gameData.currentHint.submitted) {
     return (
       <Typography className={classes.playerViewContainer}>
         <span>
           Waiting on{" "}
-          <span className={classes[gameData.currentTeam]}>team leader</span> to
-          Submit
+          <span className={classes[gameData.currentTeam]}>
+            {
+              gameData.nickMap[
+                gameData.currentTeam === Team.Team1
+                  ? gameData.team1LeaderId
+                  : gameData.team2LeaderId
+              ]
+            }
+          </span>{" "}
+          to submit a hint
         </span>
       </Typography>
     );
@@ -41,18 +55,22 @@ const PlayerView: React.FC<Props> = ({ gameData, player }) => {
 
   const numGuesses = (
     <span
-      className={classnames(classes[gameData.currentTeam], classes.guessFont)}
+      className={classnames(
+        classes[gameData.currentTeam],
+        classes.guessFont,
+        classes.spaceSpan
+      )}
     >
       {typeof gameData.currentHint.remainingGuesses === "number"
         ? gameData.currentHint.remainingGuesses + 1
-        : gameData.currentHint.remainingGuesses}
+        : ""}
     </span>
   );
 
   const guessesText =
     gameData.currentHint.remainingGuesses === "infinity" ||
     gameData.currentHint.remainingGuesses === "zero"
-      ? " guess as many as you dare"
+      ? "guess as many as you dare"
       : " left";
 
   return (
@@ -60,14 +78,21 @@ const PlayerView: React.FC<Props> = ({ gameData, player }) => {
       <div className={classes.guessContainer}>
         <span
           className={classnames(
+            classes.spaceSpan,
             classes[gameData.currentTeam],
             classes.guessFont
           )}
         >
           {gameData.currentHint.hint}
         </span>{" "}
-        <span className={classes.guessFont}>
+        <span className={classnames(classes.guessFont, classes.spaceSpan)}>
           {gameData.currentHint.hintNumber}
+        </span>
+      </div>
+      <div className={classes.guessContainer}>
+        <span>
+          <JoinNicks nicks={currentTeamNicks} team={gameData.currentTeam} /> to
+          guess.
         </span>
       </div>
       <div className={classes.guessContainer}>

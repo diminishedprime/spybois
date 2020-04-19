@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import { Override } from "./common";
+import { Override, JoinNicks } from "./common";
 import * as serviceWorker from "./serviceWorker";
 import { Provider, useSelector } from "react-redux";
 import red from "@material-ui/core/colors/red";
@@ -31,7 +31,7 @@ import {
   deleteOldFinishedGames,
 } from "./db";
 import { NickName } from "./common";
-import { WithID, GameData, Actions, State } from "./types";
+import { WithID, GameData, Actions, State, Team } from "./types";
 import { store } from "./redux";
 
 const firebaseConfig = {
@@ -156,27 +156,7 @@ const Lobby: React.FC<{ uid: string }> = ({ uid }) => {
               <Typography variant="body1">
                 {nicks.length > 0 && (
                   <>
-                    Game with{" "}
-                    {nicks.reduce(
-                      (
-                        components: any[],
-                        nick: string,
-                        idx: number,
-                        array: any[]
-                      ) => {
-                        return components.concat([
-                          idx < array.length - 1
-                            ? idx === 0
-                              ? ""
-                              : ", "
-                            : " and ",
-                          <span key={nick} className={classes.nick}>
-                            {nick}
-                          </span>,
-                        ]);
-                      },
-                      []
-                    )}
+                    Game with <JoinNicks nicks={nicks} team={Team.Team1} />
                   </>
                 )}
               </Typography>
@@ -271,7 +251,6 @@ const useStyles = makeStyles((theme) => ({
       flexGrow: "1",
     },
   },
-  nick: { color: theme.palette.secondary.main },
   pageContent: {
     display: "flex",
     flexDirection: "column",
