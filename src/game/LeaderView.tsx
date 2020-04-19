@@ -8,12 +8,11 @@ import {
   HintData,
   HintNumber,
 } from "../types";
-import { JoinNicks } from "../common";
 import { isLeader, submitHint, isYourTurn } from "../db";
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
 import { db } from "../index";
-import { useStyles, useTeamTextColor } from "../Game";
+import { useStyles } from "../Game";
 import { useSelector } from "react-redux";
 
 interface Props {
@@ -33,10 +32,6 @@ const LeaderView: React.FC<Props> = ({ gameData, player }) => {
   const classes = useStyles();
   const override = useSelector((s: State) => s.override);
   const yourTurn = isYourTurn(gameData, player);
-  const currentTeamNicks = (gameData.currentTeam === Team.Team1
-    ? gameData.team1AgentIds
-    : gameData.team2AgentIds
-  ).map((id) => gameData.nickMap[id]);
   const leader = isLeader(gameData, player);
   const [localHint, setLocalHint] = React.useState<HintData>(() => {
     if (gameData.currentHint !== undefined) {
