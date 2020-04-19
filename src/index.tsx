@@ -16,6 +16,8 @@ import {
   Route,
   useHistory,
   Link,
+  useParams,
+  useLocation,
 } from "react-router-dom";
 import Game from "./Game";
 import Button from "@material-ui/core/Button";
@@ -198,6 +200,10 @@ const Lobby: React.FC<{ uid: string }> = ({ uid }) => {
 };
 
 const SignIn: React.FC = () => {
+  const history = useHistory();
+  const queryParams = useQuery();
+  // This seems pretty hacky, but it works?
+  const afterLogin = queryParams.get("afterLogin");
   const classes = useStyles();
   const signIn = React.useCallback(() => {
     const provider = new firebase.auth.GoogleAuthProvider();
@@ -205,6 +211,9 @@ const SignIn: React.FC = () => {
       .signInWithPopup(provider)
       .then(() => {
         // redirect to home page after login
+        if (afterLogin !== null) {
+          history.push(afterLogin);
+        }
       })
       .catch((e) => {
         // TODO - handle login error.
@@ -276,7 +285,9 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-let navigateBackTo: null | string = null;
+const useQuery = () => {
+  return new URLSearchParams(useLocation().search);
+};
 
 const App = () => {
   const history = useHistory();
@@ -289,16 +300,9 @@ const App = () => {
     return auth.onAuthStateChanged((user) => {
       if (user === null) {
         setUser(undefined);
-        navigateBackTo = document.location.pathname;
-        history.push("/login");
+        history.push(`/login?afterLogin=${document.location.pathname}`);
       } else {
         setUser(user);
-        // This is hacky, but I don't feel like doing proper state handling yet.
-        if (navigateBackTo !== null) {
-          const to = navigateBackTo;
-          navigateBackTo = null;
-          history.push(to);
-        }
       }
     });
   }, [history]);
