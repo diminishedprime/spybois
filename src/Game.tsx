@@ -103,7 +103,7 @@ export const useStyles = makeStyles((theme) => ({
     flexWrap: "wrap",
   },
   badge: {
-    width: "15%",
+    width: "17%",
     margin: theme.spacing(1),
     "& span": {},
   },
