@@ -83,8 +83,11 @@ export interface GameDataInProgress extends BaseGameData, Teams {
 
 export interface GameDataGameOver extends BaseGameData, Teams {
   gameState: GameState.GameOver;
-  previousHints: PreviousHint[];
   winner: Team;
+  cards: Card[];
+  currentTeam: Team;
+  previousHints: PreviousHint[];
+  currentHint?: HintData;
 }
 
 export type GameData =

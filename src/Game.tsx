@@ -25,6 +25,7 @@ import {
   Player,
   WithID,
   GameData,
+  GameState,
   GameDataInit,
   Team,
   Role,
@@ -290,7 +291,7 @@ const JoinGame: React.FC<JoinGameProps> = ({ player, gameData }) => {
 };
 
 interface BoardProps {
-  gameData: WithID<types.GameDataInProgress>;
+  gameData: WithID<types.GameDataInProgress | types.GameDataGameOver>;
   player: Player;
 }
 
@@ -315,6 +316,9 @@ const Board: React.FC<BoardProps> = ({ gameData, player }) => {
     if (selectedCard === undefined) {
       return;
     }
+    if (gameData.gameState === GameState.GameOver) {
+      return;
+    }
     flipCard(db, gameData, selectedCard);
   }, [selectedCard, gameData, canFlip]);
   return (
@@ -323,7 +327,10 @@ const Board: React.FC<BoardProps> = ({ gameData, player }) => {
         {gameData.cards.map((card) => {
           const className = classnames(classes.card, {
             [classes[card.team]]:
-              isTeam1Leader || isTeam2Leader || card.flipped,
+              isTeam1Leader ||
+              isTeam2Leader ||
+              card.flipped ||
+              gameData.gameState === GameState.GameOver,
             [classes.flipped]: card.flipped,
           });
           return (
@@ -451,10 +458,12 @@ const Game: React.FC<GameProps> = ({ player }) => {
           won .
         </Typography>
         <Link to={"/"}>Back To Lobby</Link>
+        Hi Andrew
         <Typography variant="body1">
           TODO - Add in a way to start a new game with everybody from here. It
           should default to people being on the same team.
         </Typography>
+        <Board gameData={gameData as any} player={player} />
       </>
     );
   }

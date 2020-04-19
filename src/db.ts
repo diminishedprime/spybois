@@ -53,7 +53,7 @@ export const newFullGame = (
   uid: string,
   nick: string,
   asLeader: boolean
-): GameData => {
+): GameDataInit => {
   return {
     nickMap: {
       [uid]: nick,
@@ -83,7 +83,7 @@ export const gamesCollection = (db: firebase.firestore.Firestore) => {
   return db.collection("games");
 };
 
-const gameDoc = (db: firebase.firestore.Firestore, gameUid: string) => {
+export const gameDoc = (db: firebase.firestore.Firestore, gameUid: string) => {
   return gamesCollection(db).doc(gameUid);
 };
 
@@ -189,7 +189,9 @@ export const passTurn = async (
 export const flipCard = async (
   db: Firestore,
   gameData: WithID<GameDataInProgress>,
-  card: types.Card
+  card: types.Card,
+  // I can't figure out how to type this.
+  fb = firebase
 ): Promise<void> => {
   const currentTeam = gameData.currentTeam;
   let correct = false;
@@ -218,18 +220,17 @@ export const flipCard = async (
         // Decrement the reamining guesses by 1.
         nuCurrentHint.remainingGuesses = nuCurrentHint.remainingGuesses - 1;
       }
-    } else {
     }
     // If after updating the remaining guesses it's the value 0 (not 'zero'), or
     // if they got the wrong card, it should be the next teams turn.
     // TODO - Add special handling for assassin???
-    if (nuCurrentHint.remainingGuesses === 0 || !correct) {
+    if (nuCurrentHint.remainingGuesses < 0 || !correct) {
       nuPreviousHints.push({
         team: nuCurrentHint.team,
         hint: nuCurrentHint.hint,
         hintNumber: nuCurrentHint.hintNumber,
       });
-      nuCurrentHint = firebase.firestore.FieldValue.delete();
+      nuCurrentHint = fb.firestore.FieldValue.delete();
       nuCurrentTeam = nuCurrentTeam === Team.Team1 ? Team.Team2 : Team.Team1;
     }
   }
@@ -347,7 +348,6 @@ export const deleteOldFinishedGames = async (db: Firestore, uid: string) => {
     // For each doc, add a delete operation to the batch
     batch.delete(doc.ref);
   });
-  console.log("deleting games", { batch });
   return await batch.commit();
 };
 
