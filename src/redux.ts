@@ -48,9 +48,9 @@ const app = combineReducers<State, Actions>({ nick, override });
 
 export const store = createStore(app);
 
-store.subscribe(() => {
-  const state = store.getState();
-  console.log("State changed", state);
-});
+// store.subscribe(() => {
+//   const state = store.getState();
+//   console.log("State changed", state);
+// });
 
 export type Dispatch = typeof store.dispatch;
