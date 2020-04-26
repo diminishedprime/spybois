@@ -401,15 +401,27 @@ export const leaveGame = async (
   playerId: string
 ) => {
   // Technically I should probably update the nickmap as well, but I kinda doubt it matters.
-  const gameUpdate: Partial<UpdateGame> = {
+  let gameUpdate: Partial<UpdateGame> = {
     playerIds: firebase.firestore.FieldValue.arrayRemove(playerId),
-    team1LeaderId:
-      game.team1LeaderId === playerId ? undefined : game.team1LeaderId,
-    team1AgentIds: firebase.firestore.FieldValue.arrayRemove(playerId),
-    team2LeaderId:
-      game.team2LeaderId === playerId ? undefined : game.team2LeaderId,
-    team2AgentIds: firebase.firestore.FieldValue.arrayRemove(playerId),
   };
+
+  if (game.team1LeaderId === playerId) {
+    gameUpdate.team1LeaderId = firebase.firestore.FieldValue.delete();
+  }
+  if (game.team2LeaderId === playerId) {
+    gameUpdate.team2LeaderId = firebase.firestore.FieldValue.delete();
+  }
+  if (game.team1AgentIds !== undefined) {
+    gameUpdate.team1AgentIds = firebase.firestore.FieldValue.arrayRemove(
+      playerId
+    );
+  }
+  if (game.team2AgentIds !== undefined) {
+    gameUpdate.team2AgentIds = firebase.firestore.FieldValue.arrayRemove(
+      playerId
+    );
+  }
+
   return gameDoc(db, game.id).update(gameUpdate);
 };
 
