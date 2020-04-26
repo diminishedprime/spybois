@@ -88,6 +88,8 @@ const CreateGame: React.FC<{ uid: string }> = ({ uid }) => {
       .add(newGameWithSelf(uid, nick))
       .then((nuGame) => {
         history.push(`/games/${nuGame.id}`);
+
+        gtag("event", "new_game", { gameId: nuGame.id });
       });
   }, [uid, nick, history]);
 
@@ -131,6 +133,12 @@ const Lobby: React.FC<{ uid: string }> = ({ uid }) => {
   const classes = useStyles();
   const [games, setGames] = React.useState<WithID<GameData>[]>([]);
   const history = useHistory();
+
+  React.useEffect(() => {
+    gtag("event", "page_view", {
+      page_path: document.location.pathname,
+    });
+  }, []);
 
   React.useEffect(() => {
     deleteOldFinishedGames(db, uid);

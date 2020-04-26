@@ -448,6 +448,22 @@ const Game: React.FC<GameProps> = ({ player }) => {
   const history = useHistory();
   const { gameUid } = useParams<GameParams>();
   const [gameData, setGameData] = React.useState<WithID<GameData>>();
+
+  React.useEffect(() => {
+    gtag("event", "page_view", {
+      page_path: document.location.pathname.replace(gameUid, "{GAME_ID}"),
+    });
+  }, [gameUid]);
+
+  React.useEffect(() => {
+    if (gameData === undefined) {
+      return;
+    }
+    if (gameData.gameState === types.GameState.GameOver) {
+      gtag("event", "game_over", { gameId: gameData.id });
+    }
+  }, [gameData]);
+
   React.useEffect(() => {
     return subcribeToGameChanges(db, gameUid, (d) => {
       if (d === undefined) {
