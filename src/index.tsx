@@ -28,6 +28,7 @@ import {
   gamesCollection,
   newGameWithSelf,
   newFullGame,
+  leaveGame,
   subscribeToGamesWithPlayer,
   deleteOldFinishedGames,
 } from "./db";
@@ -139,6 +140,13 @@ const Lobby: React.FC<{ uid: string }> = ({ uid }) => {
     return subscribeToGamesWithPlayer(db, uid, setGames);
   }, [uid]);
 
+  const leave = React.useCallback(
+    (game: WithID<GameData>) => {
+      leaveGame(db, game, uid);
+    },
+    [uid]
+  );
+
   return (
     <>
       <Typography variant="h4" className={classes.heading}>
@@ -161,16 +169,26 @@ const Lobby: React.FC<{ uid: string }> = ({ uid }) => {
                   </>
                 )}
               </Typography>
-              <Button
-                className={classes.fab}
-                color="primary"
-                variant="contained"
-                onClick={() => {
-                  history.push(`/games/${game.id}`);
-                }}
-              >
-                Join
-              </Button>
+              <div className={classes.fab}>
+                <Button
+                  className={classes.fabButton}
+                  color="secondary"
+                  variant="outlined"
+                  onClick={() => leave(game)}
+                >
+                  Leave
+                </Button>
+                <Button
+                  className={classes.fabButton}
+                  color="primary"
+                  variant="contained"
+                  onClick={() => {
+                    history.push(`/games/${game.id}`);
+                  }}
+                >
+                  Join
+                </Button>
+              </div>
             </Card>
           );
         })}
@@ -269,6 +287,9 @@ const useStyles = makeStyles((theme) => ({
     marginTop: theme.spacing(1),
     justifySelf: "flex-end",
     alignSelf: "flex-end",
+  },
+  fabButton: {
+    marginLeft: theme.spacing(1),
   },
 }));
 

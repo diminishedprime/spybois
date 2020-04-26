@@ -395,6 +395,24 @@ export const joinTeam = async (
   return await gameDoc(db, gameData.id).update(update);
 };
 
+export const leaveGame = async (
+  db: Firestore,
+  game: WithID<GameData>,
+  playerId: string
+) => {
+  // Technically I should probably update the nickmap as well, but I kinda doubt it matters.
+  const gameUpdate: Partial<UpdateGame> = {
+    playerIds: firebase.firestore.FieldValue.arrayRemove(playerId),
+    team1LeaderId:
+      game.team1LeaderId === playerId ? undefined : game.team1LeaderId,
+    team1AgentIds: firebase.firestore.FieldValue.arrayRemove(playerId),
+    team2LeaderId:
+      game.team2LeaderId === playerId ? undefined : game.team2LeaderId,
+    team2AgentIds: firebase.firestore.FieldValue.arrayRemove(playerId),
+  };
+  return gameDoc(db, game.id).update(gameUpdate);
+};
+
 export const deleteOldFinishedGames = async (db: Firestore, uid: string) => {
   const toDelete = await gamesCollection(db)
     .where("playerIds", "array-contains", uid)
