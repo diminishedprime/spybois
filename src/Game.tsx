@@ -436,6 +436,28 @@ const Board: React.FC<BoardProps> = ({ gameData, player }) => {
   );
 };
 
+const YourTeam: React.FC<BoardProps> = ({ gameData, player }) => {
+  const classes = useTeamTextColor();
+
+  if (gameData.gameState !== GameState.InProgress) {
+    return null;
+  }
+
+  const redTeam = onSpecificTeam(gameData, player, Team.Team1);
+
+  return (
+    <>
+      <div>
+        You are on the{" "}
+        <span className={classes[redTeam ? Team.Team1 : Team.Team2]}>
+          {redTeam ? "Red" : "Blue"}
+        </span>{" "}
+        team
+      </div>
+    </>
+  );
+};
+
 interface GameParams {
   gameUid: string;
 }
@@ -510,6 +532,7 @@ const Game: React.FC<GameProps> = ({ player }) => {
         <PlayerView gameData={gameData} player={player} />
         <Override />
         <Board gameData={gameData} player={player} />
+        <YourTeam gameData={gameData} player={player} />
         <PreviousHints gameData={gameData} />
       </>
     );
@@ -517,21 +540,25 @@ const Game: React.FC<GameProps> = ({ player }) => {
 
   // TODO add in a helper function to turn a team enum value into user text.
   if (gameData.gameState === types.GameState.GameOver) {
+    const winnerIds =
+      gameData.winner === Team.Team1
+        ? [gameData.team1LeaderId, ...gameData.team1AgentIds]
+        : [gameData.team2LeaderId, ...gameData.team2AgentIds];
+    const winners = winnerIds.map((id) => gameData.nickMap[id]);
     return (
       <>
         <Typography variant="h2">Game Over!</Typography>
         <Typography variant="h5">
-          <JoinNicks
-            nicks={
-              gameData.winner === Team.Team1
-                ? [gameData.team1LeaderId, ...gameData.team1AgentIds]
-                : [gameData.team2LeaderId, ...gameData.team2AgentIds]
-            }
-            team={gameData.winner}
-          />{" "}
-          won!
+          <JoinNicks nicks={winners} team={gameData.winner} /> won!
         </Typography>
-        <Button onClick={reset}>New Game With Same Players</Button>
+        <Button
+          color="primary"
+          variant="contained"
+          onClick={reset}
+          style={{ marginBottom: "8px" }}
+        >
+          New Game With Same Players
+        </Button>
         <Link to={"/"}>Back To Lobby</Link>
         <Board gameData={gameData as any} player={player} />
       </>
