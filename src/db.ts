@@ -189,6 +189,17 @@ export const otherTeam = (team: Team): Team => {
   return team === Team.Team1 ? Team.Team2 : Team.Team1;
 };
 
+export const startTimer = async (
+  db: Firestore,
+  gameData: WithID<GameDataInProgress>,
+  startTime: number
+): Promise<void> => {
+  const update: Partial<UpdateGame> = {
+    timerStartTime: startTime,
+  };
+  return await gameDoc(db, gameData.id).update(update);
+};
+
 export const passTurn = async (
   db: Firestore,
   gameData: WithID<GameDataInProgress>
@@ -208,6 +219,7 @@ export const passTurn = async (
     currentTeam: nuTeam,
     currentHint: firebase.firestore.FieldValue.delete(),
     previousHints: nuPreviousHints,
+    timerStartTime: firebase.firestore.FieldValue.delete(),
   };
   return await gameDoc(db, gameData.id).update(update);
 };
@@ -238,6 +250,7 @@ export const flipCard = async (
     return c;
   });
 
+  let nuTimer = gameData.timerStartTime;
   let nuCurrentTeam = gameData.currentTeam;
   let nuCurrentHint: HintData | undefined | firebase.firestore.FieldValue =
     gameData.currentHint;
@@ -266,6 +279,7 @@ export const flipCard = async (
       });
       nuCurrentHint = fb.firestore.FieldValue.delete();
       nuCurrentTeam = nuCurrentTeam === Team.Team1 ? Team.Team2 : Team.Team1;
+      nuTimer = fb.firestore.FieldValue.delete();
     }
   }
 
@@ -287,14 +301,19 @@ export const flipCard = async (
       : team1CardsAllFlipped
       ? Team.Team1
       : Team.Team2;
-    const update: UpdateGame<Pick<
-      GameDataGameOver,
-      "winner" | "previousHints" | "gameState" | "flippedCards"
-    >> = {
+    // TODO - this type is terrrrrible.
+    const update: UpdateGame<
+      Pick<
+        GameDataGameOver,
+        "winner" | "previousHints" | "gameState" | "flippedCards"
+      > &
+        Pick<GameDataInProgress, "timerStartTime">
+    > = {
       gameState: GameState.GameOver,
       winner,
       previousHints: nuPreviousHints,
       flippedCards: nuFlippedCards,
+      timerStartTime: fb.firestore.FieldValue.delete(),
     };
     return await gameDoc(db, gameData.id).update(update);
   } else {

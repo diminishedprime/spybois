@@ -39,27 +39,31 @@ export const NickName: React.FC<NickNameProps> = ({ onChange }) => {
   );
 };
 
+const ShowOverride = false;
 export const Override: React.FC = () => {
+  const override = useSelector((a: State) => a.override);
+  const dispatch: Dispatch<Actions> = useDispatch();
+  const setOverride = React.useCallback(
+    (checked: boolean) => {
+      dispatch({ type: ActionType.SetOverride, override: checked });
+    },
+    [dispatch]
+  );
+
+  if (ShowOverride) {
+    return (
+      <FormControlLabel
+        control={
+          <Checkbox
+            value={override}
+            onChange={(e) => setOverride(e.target.checked)}
+          />
+        }
+        label="Admin Override"
+      />
+    );
+  }
   return <></>;
-  /* const override = useSelector((a: State) => a.override);
-   * const dispatch: Dispatch<Actions> = useDispatch();
-   * const setOverride = React.useCallback(
-   *   (checked: boolean) => {
-   *     dispatch({ type: ActionType.SetOverride, override: checked });
-   *   },
-   *   [dispatch]
-   * );
-   * return (
-   *   <FormControlLabel
-   *     control={
-   *       <Checkbox
-   *         value={override}
-   *         onChange={(e) => setOverride(e.target.checked)}
-   *       />
-   *     }
-   *     label="Admin Override"
-   *   />
-   * ); */
 };
 
 export const JoinNicks: React.FC<{ nicks: string[]; team: Team }> = ({

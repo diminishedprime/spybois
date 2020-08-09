@@ -17,9 +17,12 @@ import {
   onSpecificTeam,
   onTeam,
   gameReady,
+  isLeader,
   startGame,
   flipCard,
   resetGame,
+  passTurn,
+  startTimer,
 } from "./db";
 import { db } from "./index";
 import * as types from "./types";
@@ -32,6 +35,7 @@ import {
   GameDataInit,
   Team,
   Role,
+  GameDataInProgress,
 } from "./types";
 import { makeStyles } from "@material-ui/core/styles";
 import classnames from "classnames";
@@ -52,7 +56,7 @@ export const useTeamTextColor = makeStyles((theme) => ({
     display: "flex",
     width: "80vw",
     justifyContent: "space-around",
-    alignItems: "baseline",
+    alignItems: "center",
   },
   guessContainer: {
     display: "flex",
@@ -76,6 +80,26 @@ export const useTeamTextColor = makeStyles((theme) => ({
 }));
 
 export const useStyles = makeStyles((theme) => ({
+  bottomRow: {
+    display: "flex",
+    alignItems: "center",
+    "& > div": {
+      margin: theme.spacing(0, 1),
+    },
+  },
+  timer: {
+    display: "flex",
+    alignItems: "center",
+  },
+  timerTime: {
+    fontSize: theme.typography.h4.fontSize,
+    fontWeight: "bold",
+    textAlign: "center",
+    minWidth: theme.spacing(9),
+  },
+  timerButton: {
+    marginLeft: theme.spacing(1),
+  },
   leaderViewContainer: {
     margin: theme.spacing(0),
     display: "flex",
@@ -169,6 +193,9 @@ export const useStyles = makeStyles((theme) => ({
   warning: {
     backgroundColor: theme.palette.warning.main,
     color: theme.palette.getContrastText(theme.palette.warning.main),
+  },
+  danger: {
+    color: theme.palette.error.main,
   },
 }));
 
@@ -458,6 +485,92 @@ const YourTeam: React.FC<BoardProps> = ({ gameData, player }) => {
   );
 };
 
+const TimerSeconds = 90;
+
+export const Timer: React.FC<{
+  gameData: WithID<GameDataInProgress>;
+  player: Player;
+}> = ({ gameData, player }) => {
+  const classes = useStyles();
+  const canStart = !isLeader(gameData, player);
+  const [danger, setDanger] = React.useState(false);
+  const [secondsRemaining, setSecondsRemaining] = React.useState<
+    number | undefined
+  >(undefined);
+  React.useEffect(() => {
+    if (gameData.timerStartTime === undefined) {
+      return;
+    }
+    setSecondsRemaining(TimerSeconds);
+    const interval = window.setInterval(() => {
+      const now = new Date().getTime();
+      const elapsedTime = now - gameData.timerStartTime!;
+      setSecondsRemaining((old) => {
+        const nu = Math.max(TimerSeconds - Math.round(elapsedTime / 1000), 0);
+        if (old === 0) {
+          return old;
+        }
+        return nu;
+      });
+    }, 1000);
+    return () => window.clearInterval(interval);
+  }, [gameData.timerStartTime]);
+
+  React.useEffect(() => {
+    if (gameData.timerStartTime === undefined) {
+      setDanger(false);
+      setSecondsRemaining(undefined);
+    }
+  }, [gameData.timerStartTime]);
+
+  React.useEffect(() => {
+    if (secondsRemaining === undefined) {
+      return;
+    }
+    if (secondsRemaining < 10) {
+      setDanger(true);
+    }
+    if (secondsRemaining <= 0) {
+      passTurn(db, gameData).then(() => setSecondsRemaining(undefined));
+    }
+  }, [secondsRemaining]);
+
+  const start = React.useCallback(() => {
+    console.log(gameData);
+    if (gameData.timerStartTime !== undefined) {
+      return;
+    }
+    const now = new Date().getTime();
+    startTimer(db, gameData, now);
+  }, [gameData]);
+
+  return (
+    <div className={classes.timer}>
+      {secondsRemaining !== undefined && secondsRemaining > 0 ? (
+        <Typography
+          className={classnames(
+            { [classes.danger]: danger },
+            classes.timerTime
+          )}
+        >
+          {secondsRemaining}
+        </Typography>
+      ) : (
+        <Typography>Timer Stopped</Typography>
+      )}
+      <Button
+        className={classes.timerButton}
+        disabled={gameData.timerStartTime !== undefined && canStart}
+        color={gameData.currentTeam === Team.Team1 ? "primary" : "secondary"}
+        onClick={start}
+        variant="contained"
+      >
+        Start
+      </Button>
+    </div>
+  );
+};
+
 interface GameParams {
   gameUid: string;
 }
@@ -468,6 +581,7 @@ interface GameProps {
 
 const Game: React.FC<GameProps> = ({ player }) => {
   const history = useHistory();
+  const classes = useStyles();
   const { gameUid } = useParams<GameParams>();
   const [gameData, setGameData] = React.useState<WithID<GameData>>();
 
@@ -532,7 +646,10 @@ const Game: React.FC<GameProps> = ({ player }) => {
         <PlayerView gameData={gameData} player={player} />
         <Override />
         <Board gameData={gameData} player={player} />
-        <YourTeam gameData={gameData} player={player} />
+        <div className={classes.bottomRow}>
+          <YourTeam gameData={gameData} player={player} />
+          <Timer gameData={gameData} player={player} />
+        </div>
         <PreviousHints gameData={gameData} />
       </>
     );

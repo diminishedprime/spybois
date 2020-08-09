@@ -43,7 +43,7 @@ const PlayerView: React.FC<Props> = ({ gameData, player }) => {
 
   if (gameData.currentHint === undefined || !gameData.currentHint.submitted) {
     return (
-      <Typography className={classes.playerViewContainer}>
+      <Typography className={classes.playerViewContainer} component="div">
         <span>
           Waiting on{" "}
           <span className={classes[gameData.currentTeam]}>

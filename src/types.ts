@@ -88,6 +88,8 @@ export interface GameDataInProgress extends BaseGameData, Teams {
   previousHints: PreviousHint[];
   flippedCards: FlippedCard[];
   currentHint?: HintData;
+  // Time that the timer was started as an unix epoch in milliseconds.
+  timerStartTime?: number;
 }
 
 export interface GameDataGameOver extends BaseGameData, Teams {
